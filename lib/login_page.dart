@@ -168,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                   RichText(
                     text: TextSpan(
                       text: 'By logging in, you agree to our ',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
                       children: <TextSpan>[
                         TextSpan(
                           text: 'terms of use',
@@ -208,10 +208,10 @@ class _LoginPageState extends State<LoginPage> {
                   Center(
                     child: Text(
                       'or sign in with',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white54),
+                      style: TextStyle(color: Colors.white54, fontSize: 14),
                     ),
                   ),
-                  const SizedBox(height: 24.0),
+                  const SizedBox(height: 10.0),
                   Center(
                     child: InkWell(
                       onTap: () {
