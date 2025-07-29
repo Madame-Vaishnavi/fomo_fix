@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // A reusable widget for the large, horizontally scrolling event cards.
-class EventCard extends StatelessWidget {
+class EventCard extends StatefulWidget {
   final String imageUrl;
   final String date;
   final String title;
@@ -18,10 +18,15 @@ class EventCard extends StatelessWidget {
   });
 
   @override
+  State<EventCard> createState() => _EventCardState();
+}
+
+class _EventCardState extends State<EventCard> {
+  @override
   Widget build(BuildContext context) {
     final cardWidth = MediaQuery.of(context).size.width * 0.8;
     return InkWell(
-      onTap: onTap,
+      onTap: widget.onTap,
       borderRadius: BorderRadius.circular(16.0),
       child: Container(
         width: cardWidth,
@@ -36,7 +41,7 @@ class EventCard extends StatelessWidget {
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
               child: Image.network(
-                imageUrl,
+                widget.imageUrl,
                 height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -55,13 +60,13 @@ class EventCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(date, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                      Text(price, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                      Text(widget.date, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text(widget.price+" onwards", style: const TextStyle(color: Colors.white70, fontSize: 14)),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    title,
+                    widget.title,
                     style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

@@ -23,14 +23,14 @@ class _HomePageState extends State<HomePage> {
       imageUrl: 'https://placehold.co/600x300/ff4081/white?text=Arijit+Singh',
       date: '24 May 2025, 7 PM',
       location: 'Jio World Centre, Mumbai',
-      price: 'Rs. 2500 onwards',
+      price: 'Rs. 2500',
     ),
     const Event(
       title: 'Sunburn Festival Goa',
       imageUrl: 'https://placehold.co/600x300/e67e22/white?text=Sunburn',
       date: '28 Dec 2025, 2 PM',
       location: 'Vagator, Goa',
-      price: 'Rs. 3500 onwards',
+      price: 'Rs. 3500',
     ),
   ];
 
