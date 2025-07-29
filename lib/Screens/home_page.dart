@@ -132,15 +132,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCategoryIcons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Your updated categories
-        _buildCategoryItem(Icons.movie_creation, 'Theatre', Colors.green),
-        _buildCategoryItem(Icons.mic, 'Comedy', Colors.blue),
-        _buildCategoryItem(Icons.music_note_outlined, 'Music', Colors.orange),
-        _buildCategoryItem(Icons.sports_cricket, 'Sports', Colors.yellow),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          // Your updated categories
+          _buildCategoryItem(Icons.movie_creation, 'Theatre', Colors.green),
+          SizedBox(width: 10,),
+          _buildCategoryItem(Icons.mic, 'Comedy', Colors.blue),
+          SizedBox(width: 10,),
+          _buildCategoryItem(Icons.music_note_outlined, 'Music', Colors.orange),
+          SizedBox(width: 10,),
+          _buildCategoryItem(Icons.sports_cricket, 'Sports', Colors.yellow),
+        ],
+      ),
     );
   }
 
@@ -153,15 +158,20 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.grey[850],
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade800)
             ),
-            child: Icon(icon, color: color, size: 30),
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 30),
+                SizedBox(width: 10,),
+                Text(label, style: const TextStyle(color: Colors.white70)),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(color: Colors.white70)),
         ],
       ),
     );
