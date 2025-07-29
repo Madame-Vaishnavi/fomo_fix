@@ -1,6 +1,7 @@
 import 'dart:ui'; // Import for ImageFilter
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,11 +19,18 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          const Image(
-            image: AssetImage("assets/login.jpg"),
+          Image(
+            image: const AssetImage("assets/login.jpg"),
             fit: BoxFit.cover,
             width: double.infinity,
             height: 500,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 500,
+                color: Colors.deepPurple,
+                child: const Center(child: Text('Image not found', style: TextStyle(color: Colors.white))),
+              );
+            },
           ),
           Positioned.fill(
             child: Container(
@@ -45,15 +53,15 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.4),
-                  Text(
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.45),
+                  const Text(
                     'Sign in',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(color: Colors.white),
+                    style: TextStyle(color: Colors.white, fontSize: 30),
                   ),
                   const SizedBox(height: 8.0),
-                  Text(
-                    'Get an account and find your event wherever you are or wherever you\'re going.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white70),
+                  const Text(
+                    'Get an account to fix your FOMO',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 24.0),
 
@@ -68,47 +76,49 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(12.0),
                           border: Border.all(color: Colors.white.withOpacity(0.2)),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).inputDecorationTheme.fillColor,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Image(image: AssetImage("assets/india.png"), width: 25),
-                                    SizedBox(width: 8.0),
-                                    Text(
-                                      '+91',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    Icon(
-                                      Icons.arrow_drop_down,
-                                      color: Colors.white54,
-                                    ),
-                                  ],
-                                ),
+                        child: Row(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(left: 12.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[850]?.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(12.0),
                               ),
-                              const SizedBox(width: 8.0),
-                              Expanded(
-                                child: TextFormField(
-                                  keyboardType: TextInputType.phone,
-                                  style: const TextStyle(color: Colors.white), // Set text color here
-                                  decoration: const InputDecoration(
-                                    hintText: '0623691060',
-                                    hintStyle: TextStyle(color: Colors.white70), // Set hint text color
-                                    fillColor: Colors.transparent,
-                                    filled: true,
-                                    border: InputBorder.none,
+                              child: const Row(
+                                children: [
+                                  Image(image: AssetImage("assets/india.png"), width: 25),
+                                  SizedBox(width: 8.0),
+                                  Text(
+                                    '+91',
+                                    style: TextStyle(color: Colors.white),
                                   ),
-                                ),
+                                  Icon(
+                                    Icons.arrow_drop_down,
+                                    color: Colors.white54,
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 8.0),
+                            Expanded(
+                              child: TextFormField(
+                                keyboardType: TextInputType.phone,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: const InputDecoration(
+                                  hintText: '0623691060',
+                                  hintStyle: TextStyle(color: Colors.white70),
+                                  fillColor: Colors.transparent,
+                                  filled: true,
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(vertical: 15.5),
+                                  counterText: "",
+                                ),
+                                maxLength: 10,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -121,7 +131,6 @@ class _LoginPageState extends State<LoginPage> {
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12.0),
@@ -129,13 +138,15 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: TextFormField(
                           obscureText: !_isPasswordVisible,
-                          style: const TextStyle(color: Colors.white), // Set text color here
+                          style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
                             hintText: 'Enter OTP',
-                            hintStyle: const TextStyle(color: Colors.white70), // Set hint text color
+                            hintStyle: const TextStyle(color: Colors.white70),
                             fillColor: Colors.transparent,
                             filled: true,
                             border: InputBorder.none,
+                            // --- FIX: Adjusted padding to match phone number box height ---
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.5),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -172,22 +183,24 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 24.0),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/bottomNav');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurpleAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
+                  Center(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(context, '/bottomNav');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepPurpleAccent,
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Sign in',
-                        style: TextStyle(fontSize: 18.0,color: Colors.white),
+                        child: const Text(
+                          'Sign in',
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
                       ),
                     ),
                   ),
@@ -199,16 +212,14 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 24.0),
-
-                  // --- UPDATED: Google Sign-in Button (Made Smaller Horizontally) ---
                   Center(
                     child: InkWell(
                       onTap: () {
                         // TODO: Implement Google Sign-in logic
                       },
-                      borderRadius: BorderRadius.circular(12.0), // For the ripple effect
+                      borderRadius: BorderRadius.circular(12.0),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0), // Reduced horizontal padding
+                        padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12.0),
                           border: Border.all(color: Colors.white.withOpacity(0.4)),
@@ -217,10 +228,10 @@ class _LoginPageState extends State<LoginPage> {
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Image(image: AssetImage("assets/google.png"), width: 22), // Slightly smaller icon
-                            const SizedBox(width: 8.0), // Reduced spacing
+                            const Image(image: AssetImage("assets/google.png"), width: 22),
+                            const SizedBox(width: 8.0),
                             const Text(
-                              "Continue with Google",
+                              "Google",
                               style: TextStyle(fontSize: 14, color: Colors.white),
                             )
                           ],
@@ -228,7 +239,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 48.0),
+                  const SizedBox(height: 25.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
