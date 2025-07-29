@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               // Your new logo
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
                 child: Image(
                   image: const AssetImage("assets/logo.png"), // Make sure this asset exists
                   width: 180,
@@ -83,7 +83,6 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 16),
                     _buildSearchBar(context, widget.onNavigate),
                     const SizedBox(height: 24),
                     _buildCategoryIcons(), // Your new categories
