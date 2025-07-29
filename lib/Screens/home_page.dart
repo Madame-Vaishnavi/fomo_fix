@@ -84,9 +84,9 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildSearchBar(context, widget.onNavigate),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
                     _buildCategoryIcons(), // Your new categories
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
                   ],
                 ),
               ),
@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> {
         onNavigate(1);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(12.0),
@@ -158,17 +158,17 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(7),
               border: Border.all(color: Colors.grey.shade800)
             ),
             child: Row(
               children: [
-                Icon(icon, color: color, size: 30),
+                Icon(icon, color: color, size: 20),
                 SizedBox(width: 10,),
-                Text(label, style: const TextStyle(color: Colors.white70)),
+                Text(label, style: const TextStyle(color: Colors.white70,fontSize: 13)),
               ],
             ),
           ),
