@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../account_details_page.dart';
+
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
 
@@ -158,8 +160,10 @@ class _UserProfileState extends State<UserProfile> {
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
       onTap: () {
-        // Handle tap
-        print('$title tapped');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AccountDetailsPage()),
+        );
       },
     );
   }
