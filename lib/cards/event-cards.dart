@@ -52,28 +52,19 @@ class EventCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(date, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(date, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text(price, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     title,
                     style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(price, style: const TextStyle(color: Colors.white70, fontSize: 14)),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                        ),
-                        child: const Text('Book Tickets', style: TextStyle(color: Colors.white)),
-                      ),
-                    ],
                   ),
                 ],
               ),
