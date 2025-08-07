@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fomo_fix/Screens/category_page.dart';
 import '../booking-page.dart';
 import '../cards/recommendation-cards.dart'; // Adjust the import path as needed
 
@@ -33,9 +34,19 @@ class EventCategoryRow extends StatelessWidget {
                 categoryTitle,
                 style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              Text(
-                'See All',
-                style: TextStyle(color: Colors.deepPurpleAccent[100], fontSize: 14),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CategoryPage(categoryTitle: categoryTitle, events: events),
+                    ),
+                  );
+                },
+                child: Text(
+                  'See All',
+                  style: TextStyle(color: Colors.deepPurpleAccent[100], fontSize: 14),
+                ),
               ),
             ],
           ),
@@ -44,7 +55,7 @@ class EventCategoryRow extends StatelessWidget {
 
         // --- Horizontal List of Event Cards ---
         SizedBox(
-          height: 280,
+          height: 250,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: events.length,

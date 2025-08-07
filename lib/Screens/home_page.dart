@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
 import '../booking-page.dart';
-import '../cards/event-cards.dart';
 import '../cards/event-category-row.dart';
-
+import 'category_page.dart'; // Import for navigation
 
 class HomePage extends StatefulWidget {
   final Function(int) onNavigate;
@@ -18,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // --- FIX: Using a single master list for all events ---
+  // --- A single master list for all events ---
   final List<Event> _allEvents = [
     Event(
       title: 'Arijit Singh Live',
@@ -88,7 +86,7 @@ class _HomePageState extends State<HomePage> {
     ),
   ];
 
-  // --- FIX: Added helper functions to filter events ---
+  // --- Helper functions to filter events ---
   List<Event> _getEventsByCategory(String category) {
     return _allEvents.where((event) => event.category == category).toList();
   }
@@ -133,11 +131,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              // --- ADDED BACK: The top horizontal list of large event cards ---
-              _buildEventList(),
+              // _buildEventList(),
               const SizedBox(height: 24),
 
-              // --- FIX: Replaced old lists with modular, filtered category rows ---
               EventCategoryRow(
                 categoryTitle: 'Recommendations',
                 events: _getRecommendedEvents(),
@@ -212,10 +208,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // --- UPDATED: Category items now navigate to the CategoryPage ---
   Widget _buildCategoryItem(IconData icon, String label, Color color) {
     return InkWell(
       onTap: () {
-        print('$label category tapped');
+        // Navigate to the CategoryPage, passing the title and filtered list of events
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryPage(
+              categoryTitle: '$label Events', // e.g., "Music Events"
+              events: _getEventsByCategory(label),
+            ),
+          ),
+        );
       },
       borderRadius: BorderRadius.circular(7),
       child: Container(
@@ -236,35 +242,33 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- ADDED BACK: Widget to build the top horizontal event list ---
-  Widget _buildEventList() {
-    // We'll feature the first 2 events from the main list, for example.
-    final featuredEvents = _allEvents.take(2).toList();
-
-    return SizedBox(
-      height: 310,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: featuredEvents.length,
-        padding: const EdgeInsets.only(left: 16.0),
-        itemBuilder: (context, index) {
-          final event = featuredEvents[index];
-          return EventCard(
-            imageUrl: event.imageUrl,
-            date: event.date,
-            title: event.title,
-            price: event.price,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BookingPage(event: event),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+  // Widget _buildEventList() {
+  //   final featuredEvents = _allEvents.take(2).toList();
+  //
+  //   return SizedBox(
+  //     height: 310,
+  //     child: ListView.builder(
+  //       scrollDirection: Axis.horizontal,
+  //       itemCount: featuredEvents.length,
+  //       padding: const EdgeInsets.only(left: 16.0),
+  //       itemBuilder: (context, index) {
+  //         final event = featuredEvents[index];
+  //         return EventCard(
+  //           imageUrl: event.imageUrl,
+  //           date: event.date,
+  //           title: event.title,
+  //           price: event.price,
+  //           onTap: () {
+  //             Navigator.push(
+  //               context,
+  //               MaterialPageRoute(
+  //                 builder: (context) => BookingPage(event: event),
+  //               ),
+  //             );
+  //           },
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 }

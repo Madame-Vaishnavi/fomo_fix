@@ -58,22 +58,22 @@ class _RecommendationCardState extends State<RecommendationCard> {
                     ),
                   ),
                 ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.favorite_border, color: Colors.white),
-                      onPressed: widget.onFavoriteTap,
-                      constraints: const BoxConstraints(),
-                      padding: const EdgeInsets.all(6),
-                    ),
-                  ),
-                ),
+                // Positioned(
+                //   top: 8,
+                //   right: 8,
+                //   child: Container(
+                //     decoration: BoxDecoration(
+                //       color: Colors.black.withOpacity(0.3),
+                //       shape: BoxShape.circle,
+                //     ),
+                //     child: IconButton(
+                //       icon: const Icon(Icons.favorite_border, color: Colors.white),
+                //       onPressed: widget.onFavoriteTap,
+                //       constraints: const BoxConstraints(),
+                //       padding: const EdgeInsets.all(6),
+                //     ),
+                //   ),
+                // ),
               ],
             ),
             Padding(
@@ -104,10 +104,29 @@ class _RecommendationCardState extends State<RecommendationCard> {
                     style: TextStyle(color: Colors.yellow[700], fontSize: 12),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    "Rs. "+widget.price,
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
+                  Text.rich(
+                    TextSpan(
+                      text: '', // First part of the string
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                      ),
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: 'Rs.'+widget.price, // Second part with different style
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' onwards', // Second part with different style
+                          style: TextStyle(
+                            fontSize: 12
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),
