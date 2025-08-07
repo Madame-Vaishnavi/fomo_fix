@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 
-// A model to hold event data. In a real app, this might come from an API.
+// A model to hold event data.
 class Event {
   final String title;
   final String imageUrl;
   final String date;
   final String location;
   final String price;
+  final String category;
+
+  // --- NEW FIELDS for Recommendations ---
+  final DateTime creationDate;
+  final int totalTickets;
+  final int ticketsSold;
 
   const Event({
     required this.title,
@@ -14,8 +20,16 @@ class Event {
     required this.date,
     required this.location,
     required this.price,
+    required this.category,
+    required this.creationDate,
+    required this.totalTickets,
+    required this.ticketsSold,
   });
+
+  // Helper to calculate reservation percentage
+  double get reservationPercentage => (ticketsSold / totalTickets) * 100;
 }
+
 
 class BookingPage extends StatefulWidget {
   final Event event;

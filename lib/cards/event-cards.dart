@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// A reusable widget for the large, horizontally scrolling event cards.
 class EventCard extends StatefulWidget {
   final String imageUrl;
   final String date;
@@ -24,7 +23,7 @@ class EventCard extends StatefulWidget {
 class _EventCardState extends State<EventCard> {
   @override
   Widget build(BuildContext context) {
-    final cardWidth = MediaQuery.of(context).size.width * 0.8;
+    final cardWidth = MediaQuery.of(context).size.width * 0.7;
     return InkWell(
       onTap: widget.onTap,
       borderRadius: BorderRadius.circular(16.0),
@@ -61,7 +60,7 @@ class _EventCardState extends State<EventCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(widget.date, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                      Text(widget.price+" onwards", style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                      Text("Rs."+widget.price+" onwards", style: const TextStyle(color: Colors.white70, fontSize: 14)),
                     ],
                   ),
                   const SizedBox(height: 8),

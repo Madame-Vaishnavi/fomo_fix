@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fomo_fix/Screens/event_listing.dart';
 import 'package:fomo_fix/booking-page.dart';
 import 'package:fomo_fix/bottom_nav.dart';
 import 'package:fomo_fix/Screens/home_page.dart';
@@ -28,7 +29,8 @@ class _MainState extends State<Main> {
       routes: {
         '/': (context) => SplashScreen(),
         '/landing': (context) => LoginPage(),
-        '/bottomNav': (context)=> BottomNavBar()
+        '/bottomNav': (context)=> BottomNavBar(),
+        '/eventListing' :(context)=> EventListing(),
       },
     );
   }

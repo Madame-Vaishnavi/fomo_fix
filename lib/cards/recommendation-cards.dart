@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // A reusable widget for the smaller recommendation cards.
-class RecommendationCard extends StatelessWidget {
+class RecommendationCard extends StatefulWidget {
   final String imageUrl;
   final String title;
   final String location;
@@ -22,10 +22,15 @@ class RecommendationCard extends StatelessWidget {
   });
 
   @override
+  State<RecommendationCard> createState() => _RecommendationCardState();
+}
+
+class _RecommendationCardState extends State<RecommendationCard> {
+  @override
   Widget build(BuildContext context) {
     final cardWidth = (MediaQuery.of(context).size.width / 2) - 24;
     return InkWell(
-      onTap: onTap,
+      onTap: widget.onTap,
       borderRadius: BorderRadius.circular(16.0),
       child: Container(
         width: cardWidth,
@@ -42,7 +47,7 @@ class RecommendationCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
                   child: Image.network(
-                    imageUrl,
+                    widget.imageUrl,
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -63,7 +68,7 @@ class RecommendationCard extends StatelessWidget {
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.favorite_border, color: Colors.white),
-                      onPressed: onFavoriteTap,
+                      onPressed: widget.onFavoriteTap,
                       constraints: const BoxConstraints(),
                       padding: const EdgeInsets.all(6),
                     ),
@@ -77,7 +82,7 @@ class RecommendationCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    widget.title,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -88,19 +93,19 @@ class RecommendationCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    location,
+                    widget.location,
                     style: const TextStyle(color: Colors.white70, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    date,
+                    widget.date,
                     style: TextStyle(color: Colors.yellow[700], fontSize: 12),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    price,
+                    "Rs. "+widget.price,
                     style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 ],
