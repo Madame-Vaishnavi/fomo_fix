@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../account_details_page.dart';
+import 'account_details_page.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});

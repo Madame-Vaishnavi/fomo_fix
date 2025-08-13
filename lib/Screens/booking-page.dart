@@ -26,10 +26,26 @@ class Event {
     required this.ticketsSold,
   });
 
+  // Factory constructor to create Event from JSON
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
+      title: json['title'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      date: json['date'] ?? '',
+      location: json['location'] ?? '',
+      price: json['price'] ?? '',
+      category: json['category'] ?? '',
+      creationDate: json['creationDate'] != null
+          ? DateTime.parse(json['creationDate'])
+          : DateTime.now(),
+      totalTickets: json['totalTickets'] ?? 100,
+      ticketsSold: json['ticketsSold'] ?? 0,
+    );
+  }
+
   // Helper to calculate reservation percentage
   double get reservationPercentage => (ticketsSold / totalTickets) * 100;
 }
-
 
 class BookingPage extends StatefulWidget {
   final Event event;
@@ -97,9 +113,15 @@ class _BookingPageState extends State<BookingPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildDetailRow(Icons.calendar_today, widget.event.date),
+                        _buildDetailRow(
+                          Icons.calendar_today,
+                          widget.event.date,
+                        ),
                         const SizedBox(height: 12),
-                        _buildDetailRow(Icons.location_on, widget.event.location),
+                        _buildDetailRow(
+                          Icons.location_on,
+                          widget.event.location,
+                        ),
                         const SizedBox(height: 24),
                         const Text(
                           'About this event',
@@ -112,14 +134,19 @@ class _BookingPageState extends State<BookingPage> {
                         const SizedBox(height: 8),
                         Text(
                           'Join us for an unforgettable experience. This event brings together the best talent for a night of entertainment and fun. Get your tickets now before they sell out!',
-                          style: TextStyle(color: Colors.grey[400], height: 1.5),
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            height: 1.5,
+                          ),
                         ),
                         const SizedBox(height: 24),
                         const Divider(color: Colors.white24),
                         const SizedBox(height: 24),
                         // --- Ticket Selection ---
                         _buildTicketSelector(),
-                        const SizedBox(height: 100), // Space for the floating button
+                        const SizedBox(
+                          height: 100,
+                        ), // Space for the floating button
                       ],
                     ),
                   ),
@@ -174,7 +201,11 @@ class _BookingPageState extends State<BookingPage> {
               ),
               Text(
                 '$_ticketCount',
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.add, color: Colors.white),

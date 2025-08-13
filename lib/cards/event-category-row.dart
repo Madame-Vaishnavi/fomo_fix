@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fomo_fix/Screens/category_page.dart';
-import '../booking-page.dart';
+import '../Screens/booking-page.dart';
 import '../cards/recommendation-cards.dart'; // Adjust the import path as needed
 
 

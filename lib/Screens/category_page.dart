@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fomo_fix/cards/recommendation-cards.dart';
 
-import '../booking-page.dart';
+import 'booking-page.dart';
 
 
 class CategoryPage extends StatefulWidget {

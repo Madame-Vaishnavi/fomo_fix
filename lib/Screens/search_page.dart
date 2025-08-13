@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../booking-page.dart';
+import 'booking-page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
