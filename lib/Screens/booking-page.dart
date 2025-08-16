@@ -1,51 +1,5 @@
 import 'package:flutter/material.dart';
-
-// A model to hold event data.
-class Event {
-  final String title;
-  final String imageUrl;
-  final String date;
-  final String location;
-  final String price;
-  final String category;
-
-  // --- NEW FIELDS for Recommendations ---
-  final DateTime creationDate;
-  final int totalTickets;
-  final int ticketsSold;
-
-  const Event({
-    required this.title,
-    required this.imageUrl,
-    required this.date,
-    required this.location,
-    required this.price,
-    required this.category,
-    required this.creationDate,
-    required this.totalTickets,
-    required this.ticketsSold,
-  });
-
-  // Factory constructor to create Event from JSON
-  factory Event.fromJson(Map<String, dynamic> json) {
-    return Event(
-      title: json['title'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
-      date: json['date'] ?? '',
-      location: json['location'] ?? '',
-      price: json['price'] ?? '',
-      category: json['category'] ?? '',
-      creationDate: json['creationDate'] != null
-          ? DateTime.parse(json['creationDate'])
-          : DateTime.now(),
-      totalTickets: json['totalTickets'] ?? 100,
-      ticketsSold: json['ticketsSold'] ?? 0,
-    );
-  }
-
-  // Helper to calculate reservation percentage
-  double get reservationPercentage => (ticketsSold / totalTickets) * 100;
-}
+import '../models/event.dart';
 
 class BookingPage extends StatefulWidget {
   final Event event;
@@ -89,7 +43,7 @@ class _BookingPageState extends State<BookingPage> {
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Image.network(
-                    widget.event.imageUrl,
+                    widget.event.imageUrl ?? 'https://picsum.photos/300/200?random=1',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         Container(color: Colors.deepPurpleAccent),

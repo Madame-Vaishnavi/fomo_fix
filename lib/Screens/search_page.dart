@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../models/event.dart';
 import 'booking-page.dart';
 
 class SearchPage extends StatefulWidget {
@@ -22,55 +22,104 @@ class _SearchPageState extends State<SearchPage> {
   // --- Event data and filtering logic from HomePage ---
   final List<Event> _allEvents = [
     Event(
-      title: 'Arijit Singh Live',
+      name: 'Arijit Singh Live',
+      description: 'Live performance by Arijit Singh',
       imageUrl: 'https://placehold.co/600x300/ff4081/white?text=Arijit',
-      date: '24 May 2025, 7 PM',
+      date: '2025-05-24T19:00:00',
       location: 'Jio World Centre, Mumbai',
-      price: '2500',
-      category: 'Music',
+      category: 'CONCERT',
+      seatCategories: [
+        SeatCategory(
+          categoryName: 'VIP',
+          totalSeats: 200,
+          availableSeats: 50,
+          pricePerSeat: 5000.0,
+        ),
+        SeatCategory(
+          categoryName: 'General',
+          totalSeats: 800,
+          availableSeats: 200,
+          pricePerSeat: 2500.0,
+        ),
+      ],
       creationDate: DateTime(2025, 8, 1),
-      totalTickets: 1000,
-      ticketsSold: 800,
     ),
     Event(
-      title: 'Sunburn Festival Goa',
+      name: 'Sunburn Festival Goa',
+      description: 'Annual electronic dance music festival',
       imageUrl: 'https://placehold.co/600x300/e67e22/white?text=Sunburn',
-      date: '28 Dec 2025, 2 PM',
+      date: '2025-12-28T14:00:00',
       location: 'Vagator, Goa',
-      price: '3000',
-      category: 'Music',
+      category: 'FESTIVAL',
+      seatCategories: [
+        SeatCategory(
+          categoryName: 'Early Bird',
+          totalSeats: 2000,
+          availableSeats: 1900,
+          pricePerSeat: 2500.0,
+        ),
+        SeatCategory(
+          categoryName: 'Regular',
+          totalSeats: 3000,
+          availableSeats: 2900,
+          pricePerSeat: 3000.0,
+        ),
+      ],
       creationDate: DateTime(2025, 8, 5),
-      totalTickets: 5000,
-      ticketsSold: 100,
     ),
     Event(
-      title: 'Zakir Khan Live',
+      name: 'Zakir Khan Live',
+      description: 'Stand-up comedy by Zakir Khan',
       imageUrl: 'https://placehold.co/300x400/c0392b/fff?text=Zakir',
-      date: 'Fri, Jun 10 • 8:00 pm',
+      date: '2025-06-10T20:00:00',
       location: 'Hard Rock Cafe, Delhi',
-      price: '999',
-      category: 'Comedy',
+      category: 'COMEDY',
+      seatCategories: [
+        SeatCategory(
+          categoryName: 'Premium',
+          totalSeats: 100,
+          availableSeats: 80,
+          pricePerSeat: 1500.0,
+        ),
+        SeatCategory(
+          categoryName: 'Standard',
+          totalSeats: 200,
+          availableSeats: 100,
+          pricePerSeat: 999.0,
+        ),
+      ],
       creationDate: DateTime(2025, 5, 1),
-      totalTickets: 300,
-      ticketsSold: 100,
     ),
     Event(
-      title: 'India vs Australia',
+      name: 'India vs Australia',
+      description: 'Cricket match between India and Australia',
       imageUrl: 'https://placehold.co/300x400/3498db/fff?text=Cricket',
-      date: 'Sun, Nov 05 • 2:00 pm',
+      date: '2025-11-05T14:00:00',
       location: 'Wankhede Stadium, Mumbai',
-      price: '1500',
-      category: 'Sports',
+      category: 'SPORTS',
+      seatCategories: [
+        SeatCategory(
+          categoryName: 'Premium',
+          totalSeats: 2000,
+          availableSeats: 500,
+          pricePerSeat: 3000.0,
+        ),
+        SeatCategory(
+          categoryName: 'General',
+          totalSeats: 8000,
+          availableSeats: 6000,
+          pricePerSeat: 1500.0,
+        ),
+      ],
       creationDate: DateTime(2025, 8, 1),
-      totalTickets: 10000,
-      ticketsSold: 2000,
     ),
   ];
 
   List<Event> _getRecommendedEvents() {
     final now = DateTime.now();
     return _allEvents.where((event) {
-      final isNew = now.difference(event.creationDate).inDays <= 30;
+      final isNew = event.creationDate != null && 
+          now.difference(event.creationDate!).inDays <= 30;
       final isNotFull = event.reservationPercentage < 50;
       return isNew || isNotFull;
     }).toList();
@@ -201,7 +250,7 @@ class _SearchPageState extends State<SearchPage> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: Image.network(
-                event.imageUrl,
+                event.imageUrl ?? 'https://picsum.photos/300/200?random=1',
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -215,7 +264,7 @@ class _SearchPageState extends State<SearchPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    event.title,
+                    event.name,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,

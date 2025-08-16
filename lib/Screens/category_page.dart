@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fomo_fix/cards/recommendation-cards.dart';
-
+import 'package:fomo_fix/models/event.dart';
 import 'booking-page.dart';
 
 
@@ -73,11 +73,7 @@ class _CategoryPageState extends State<CategoryPage> {
               itemBuilder: (context, index) {
                 final event = _paginatedEvents[index];
                 return RecommendationCard(
-                  imageUrl: event.imageUrl,
-                  title: event.title,
-                  location: event.location,
-                  date: event.date,
-                  price: event.price,
+                  event: event,
                   onTap: () {
                     Navigator.push(
                       context,

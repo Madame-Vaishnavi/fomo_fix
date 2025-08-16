@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fomo_fix/Screens/category_page.dart';
 import '../Screens/booking-page.dart';
+import '../models/event.dart';
 import '../cards/recommendation-cards.dart'; // Adjust the import path as needed
 
 
@@ -55,7 +56,7 @@ class EventCategoryRow extends StatelessWidget {
 
         // --- Horizontal List of Event Cards ---
         SizedBox(
-          height: 250,
+          height: 280,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: events.length,
@@ -63,11 +64,7 @@ class EventCategoryRow extends StatelessWidget {
             itemBuilder: (context, index) {
               final event = events[index];
               return RecommendationCard(
-                imageUrl: event.imageUrl,
-                title: event.title,
-                location: event.location,
-                date: event.date,
-                price: event.price,
+                event: event,
                 onTap: () {
                   // Navigate to the booking page with the specific event details
                   Navigator.push(

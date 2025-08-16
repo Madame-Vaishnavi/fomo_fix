@@ -183,7 +183,7 @@ class _EventListingState extends State<EventListing> {
         );
       } else {
         // 5b. If no image, use your existing post method which sends JSON
-        response = await ApiService.post('/events', jsonData);
+        response = await ApiService.post('/events/create', jsonData);
       }
 
       print('Response status: ${response.statusCode}');

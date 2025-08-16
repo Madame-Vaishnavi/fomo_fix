@@ -4,7 +4,7 @@ import 'package:fomo_fix/api-service.dart';
 import 'package:fomo_fix/cards/event-category-row.dart';
 import 'package:fomo_fix/Screens/category_page.dart';
 import 'package:fomo_fix/config.dart';
-import 'booking-page.dart';
+import 'package:fomo_fix/models/event.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int) onNavigate;
@@ -57,6 +57,7 @@ class _HomePageState extends State<HomePage> {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         print('Events loaded successfully: ${data.length} events');
+        print(data);
 
         setState(() {
           // Parse the list of maps into a list of Event objects
@@ -145,48 +146,102 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _allEvents = [
         Event(
-          title: 'Rock Concert 2024',
+          name: 'Rock Concert 2024',
+          description: 'Amazing rock concert featuring top artists',
           imageUrl: 'https://picsum.photos/300/200?random=1',
-          date: '2024-03-15',
+          date: '2024-03-15T19:00:00',
           location: 'Central Park, NY',
-          price: '50',
-          category: 'Music',
+          category: 'CONCERT',
+          seatCategories: [
+            SeatCategory(
+              categoryName: 'VIP',
+              totalSeats: 200,
+              availableSeats: 50,
+              pricePerSeat: 150.0,
+            ),
+            SeatCategory(
+              categoryName: 'General',
+              totalSeats: 800,
+              availableSeats: 200,
+              pricePerSeat: 75.0,
+            ),
+          ],
           creationDate: DateTime.now().subtract(const Duration(days: 5)),
-          totalTickets: 1000,
-          ticketsSold: 750,
         ),
         Event(
-          title: 'Comedy Night',
+          name: 'Comedy Night',
+          description: 'Laugh your heart out with top comedians',
           imageUrl: 'https://picsum.photos/300/200?random=2',
-          date: '2024-03-20',
+          date: '2024-03-20T20:00:00',
           location: 'Comedy Club, LA',
-          price: '25',
-          category: 'Comedy',
+          category: 'COMEDY',
+          seatCategories: [
+            SeatCategory(
+              categoryName: 'Premium',
+              totalSeats: 100,
+              availableSeats: 80,
+              pricePerSeat: 50.0,
+            ),
+            SeatCategory(
+              categoryName: 'Standard',
+              totalSeats: 100,
+              availableSeats: 70,
+              pricePerSeat: 25.0,
+            ),
+          ],
           creationDate: DateTime.now().subtract(const Duration(days: 10)),
-          totalTickets: 200,
-          ticketsSold: 50,
         ),
         Event(
-          title: 'Shakespeare in the Park',
+          name: 'Shakespeare in the Park',
+          description: 'Classic Shakespeare performed outdoors',
           imageUrl: 'https://picsum.photos/300/200?random=3',
-          date: '2024-03-25',
+          date: '2024-03-25T18:00:00',
           location: 'Theatre District, NY',
-          price: '35',
-          category: 'Theatre',
+          category: 'THEATER',
+          seatCategories: [
+            SeatCategory(
+              categoryName: 'Front Row',
+              totalSeats: 100,
+              availableSeats: 20,
+              pricePerSeat: 100.0,
+            ),
+            SeatCategory(
+              categoryName: 'General Admission',
+              totalSeats: 400,
+              availableSeats: 200,
+              pricePerSeat: 35.0,
+            ),
+          ],
           creationDate: DateTime.now().subtract(const Duration(days: 15)),
-          totalTickets: 500,
-          ticketsSold: 300,
         ),
         Event(
-          title: 'Basketball Championship',
+          name: 'Basketball Championship',
+          description: 'Championship game with top teams',
           imageUrl: 'https://picsum.photos/300/200?random=4',
-          date: '2024-03-30',
+          date: '2024-03-30T19:30:00',
           location: 'Madison Square Garden',
-          price: '80',
-          category: 'Sports',
+          category: 'SPORTS',
+          seatCategories: [
+            SeatCategory(
+              categoryName: 'Courtside',
+              totalSeats: 50,
+              availableSeats: 5,
+              pricePerSeat: 500.0,
+            ),
+            SeatCategory(
+              categoryName: 'Lower Bowl',
+              totalSeats: 5000,
+              availableSeats: 500,
+              pricePerSeat: 150.0,
+            ),
+            SeatCategory(
+              categoryName: 'Upper Bowl',
+              totalSeats: 15000,
+              availableSeats: 2000,
+              pricePerSeat: 80.0,
+            ),
+          ],
           creationDate: DateTime.now().subtract(const Duration(days: 20)),
-          totalTickets: 20000,
-          ticketsSold: 18000,
         ),
       ];
       _isLoading = false;
@@ -203,8 +258,8 @@ class _HomePageState extends State<HomePage> {
   List<Event> _getRecommendedEvents() {
     final now = DateTime.now();
     return _allEvents.where((event) {
-      // Set a threshold for what "newly created" means, e.g., 30 days
-      final isNew = now.difference(event.creationDate).inDays <= 30;
+      final isNew = event.creationDate != null && 
+          now.difference(event.creationDate!).inDays <= 30;
       final isNotFull = event.reservationPercentage < 50;
       return isNew || isNotFull;
     }).toList();
@@ -300,22 +355,22 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 24),
                     EventCategoryRow(
                       categoryTitle: 'Music Concerts',
-                      events: _getEventsByCategory('Music'),
+                      events: _getEventsByCategory('CONCERT'),
                     ),
                     const SizedBox(height: 24),
                     EventCategoryRow(
                       categoryTitle: 'Comedy Shows',
-                      events: _getEventsByCategory('Comedy'),
+                      events: _getEventsByCategory('COMEDY'),
                     ),
                     const SizedBox(height: 24),
                     EventCategoryRow(
                       categoryTitle: 'Theatre & Arts',
-                      events: _getEventsByCategory('Theatre'),
+                      events: _getEventsByCategory('THEATER'),
                     ),
                     const SizedBox(height: 24),
                     EventCategoryRow(
                       categoryTitle: 'Sporting Events',
-                      events: _getEventsByCategory('Sports'),
+                      events: _getEventsByCategory('SPORTS'),
                     ),
                     const SizedBox(height: 24),
                   ],
@@ -356,27 +411,27 @@ class _HomePageState extends State<HomePage> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildCategoryItem(Icons.movie_creation, 'Theatre', Colors.green),
+          _buildCategoryItem(Icons.movie_creation, 'THEATER', Colors.green),
           const SizedBox(width: 10),
-          _buildCategoryItem(Icons.mic, 'Comedy', Colors.blue),
+          _buildCategoryItem(Icons.mic, 'COMEDY', Colors.blue),
           const SizedBox(width: 10),
-          _buildCategoryItem(Icons.music_note_outlined, 'Music', Colors.orange),
+          _buildCategoryItem(Icons.music_note_outlined, 'CONCERT', Colors.orange),
           const SizedBox(width: 10),
-          _buildCategoryItem(Icons.sports_cricket, 'Sports', Colors.yellow),
+          _buildCategoryItem(Icons.sports_cricket, 'SPORTS', Colors.yellow),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryItem(IconData icon, String label, Color color) {
+  Widget _buildCategoryItem(IconData icon, String category, Color color) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => CategoryPage(
-              categoryTitle: '$label Events',
-              events: _getEventsByCategory(label),
+              categoryTitle: '${_getCategoryDisplayName(category)} Events',
+              events: _getEventsByCategory(category),
             ),
           ),
         );
@@ -394,13 +449,41 @@ class _HomePageState extends State<HomePage> {
             Icon(icon, color: color, size: 20),
             const SizedBox(width: 10),
             Text(
-              label,
+              _getCategoryDisplayName(category),
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // Helper method to get display names for categories
+  String _getCategoryDisplayName(String category) {
+    switch (category.toUpperCase()) {
+      case 'CONCERT':
+        return 'Music';
+      case 'THEATER':
+        return 'Theatre';
+      case 'SPORTS':
+        return 'Sports';
+      case 'COMEDY':
+        return 'Comedy';
+      case 'CONFERENCE':
+        return 'Conference';
+      case 'WORKSHOP':
+        return 'Workshop';
+      case 'EXHIBITION':
+        return 'Exhibition';
+      case 'FESTIVAL':
+        return 'Festival';
+      case 'DANCE':
+        return 'Dance';
+      case 'MOVIE':
+        return 'Movie';
+      default:
+        return category;
+    }
   }
 
   // ENHANCED: Better error widget with refresh option
