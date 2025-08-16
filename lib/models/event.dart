@@ -187,11 +187,9 @@ class Event {
       final difference = dateTime.difference(now).inDays;
       
       if (difference == 0) return 'Today';
-      if (difference == 1) return 'Tomorrow';
-      if (difference < 7) return '${difference} days';
-      if (difference < 30) return '${(difference / 7).floor()} weeks';
-      
-      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+      else if (difference == 1) return 'Tomorrow';
+      else return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+
     } catch (e) {
       return date;
     }

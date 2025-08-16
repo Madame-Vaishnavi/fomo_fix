@@ -34,13 +34,7 @@ Returns a list of all available event category display names.
     "Concert",
     "Theater", 
     "Sports",
-    "Conference",
-    "Workshop",
-    "Exhibition",
-    "Festival",
     "Comedy",
-    "Dance",
-    "Movie",
     "Other"
 ]
 ```

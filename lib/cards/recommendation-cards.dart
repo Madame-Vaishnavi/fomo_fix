@@ -74,6 +74,7 @@ class _RecommendationCardState extends State<RecommendationCard> {
                   ),
                 ),
                 // Ticket availability indicator
+                if(event.reservationPercentage>=50)
                 Positioned(
                   top: 8,
                   right: 8,
@@ -180,33 +181,6 @@ class _RecommendationCardState extends State<RecommendationCard> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Ticket availability progress bar
-                  Container(
-                    width: double.infinity,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[800],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: event.reservationPercentage / 100,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _getAvailabilityColor(event.reservationPercentage),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${event.reservationPercentage.toStringAsFixed(0)}% booked',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 10,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -218,8 +192,7 @@ class _RecommendationCardState extends State<RecommendationCard> {
 
   Color _getAvailabilityColor(double percentage) {
     if (percentage >= 80) return Colors.red;
-    if (percentage >= 60) return Colors.orange;
-    if (percentage >= 40) return Colors.yellow;
+    if (percentage >= 50) return Colors.orange;
     return Colors.green;
   }
 }

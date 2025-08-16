@@ -41,11 +41,11 @@ class _EventListingState extends State<EventListing> {
   bool _isLoading = false;
   String _selectedCategory = 'CONCERT'; // Default category
   final List<String> _eventCategories = [
-    'CONCERT',
-    'SPORTS',
-    'CONFERENCE',
-    'THEATER',
-    'FESTIVAL',
+    "CONCERT",
+    "THEATER",
+    "SPORTS",
+    "COMEDY",
+    "OTHER"
   ];
 
   DateTime? _selectedDate;

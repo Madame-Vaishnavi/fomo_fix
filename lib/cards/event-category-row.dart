@@ -56,7 +56,7 @@ class EventCategoryRow extends StatelessWidget {
 
         // --- Horizontal List of Event Cards ---
         SizedBox(
-          height: 280,
+          height: 250,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: events.length,
