@@ -65,7 +65,6 @@ class _CategoryPageState extends State<CategoryPage> {
               padding: const EdgeInsets.all(16.0),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2, // Display two cards per row
-                crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 childAspectRatio: 0.75, // Adjust aspect ratio for card height
               ),
@@ -81,7 +80,6 @@ class _CategoryPageState extends State<CategoryPage> {
                       MaterialPageRoute(builder: (context) => BookingPage(event: event)),
                     );
                   },
-                  onFavoriteTap: () {},
                 );
               },
             ),

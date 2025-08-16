@@ -309,13 +309,12 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(width: 10),
           _buildCategoryItem(Icons.mic, 'COMEDY', Colors.blue),
           const SizedBox(width: 10),
-          _buildCategoryItem(
-            Icons.music_note_outlined,
-            'CONCERT',
-            Colors.orange,
+          _buildCategoryItem(Icons.music_note_outlined, 'CONCERT', Colors.orange,
           ),
           const SizedBox(width: 10),
           _buildCategoryItem(Icons.sports_cricket, 'SPORTS', Colors.yellow),
+          const SizedBox(width: 10),
+          _buildCategoryItem(Icons.event, 'OTHER', Colors.deepPurple),
         ],
       ),
     );
@@ -368,7 +367,7 @@ class _HomePageState extends State<HomePage> {
       case 'COMEDY':
         return 'Comedy';
       default:
-        return category;
+        return 'Other';
     }
   }
 

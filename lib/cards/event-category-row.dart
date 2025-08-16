@@ -75,9 +75,6 @@ class EventCategoryRow extends StatelessWidget {
                     ),
                   );
                 },
-                onFavoriteTap: () {
-                  print('Favorite tapped on ${event.title}');
-                },
               );
             },
           ),

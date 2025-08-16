@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import '../api-service.dart';
+import '../config.dart';
 import '../models/event.dart';
 import 'booking-page.dart';
 
@@ -10,121 +14,146 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  final TextEditingController _searchController = TextEditingController();
-  final List<String> _recentSearches = [
-    'Concerts',
-    'Stand-up',
-    'Workshops',
-    'Theatre',
-    'Exhibitions',
-  ];
+  List<Event> _allEvents = [];
+  bool _isLoading = true;
+  bool _isRefreshing = false;
+  String? _errorMessage;
 
-  // --- Event data and filtering logic from HomePage ---
-  final List<Event> _allEvents = [
-    Event(
-      name: 'Arijit Singh Live',
-      description: 'Live performance by Arijit Singh',
-      imageUrl: 'https://placehold.co/600x300/ff4081/white?text=Arijit',
-      date: '2025-05-24T19:00:00',
-      location: 'Jio World Centre, Mumbai',
-      category: 'CONCERT',
-      seatCategories: [
-        SeatCategory(
-          categoryName: 'VIP',
-          totalSeats: 200,
-          availableSeats: 50,
-          pricePerSeat: 5000.0,
-        ),
-        SeatCategory(
-          categoryName: 'General',
-          totalSeats: 800,
-          availableSeats: 200,
-          pricePerSeat: 2500.0,
-        ),
-      ],
-      creationDate: DateTime(2025, 8, 1),
-    ),
-    Event(
-      name: 'Sunburn Festival Goa',
-      description: 'Annual electronic dance music festival',
-      imageUrl: 'https://placehold.co/600x300/e67e22/white?text=Sunburn',
-      date: '2025-12-28T14:00:00',
-      location: 'Vagator, Goa',
-      category: 'FESTIVAL',
-      seatCategories: [
-        SeatCategory(
-          categoryName: 'Early Bird',
-          totalSeats: 2000,
-          availableSeats: 1900,
-          pricePerSeat: 2500.0,
-        ),
-        SeatCategory(
-          categoryName: 'Regular',
-          totalSeats: 3000,
-          availableSeats: 2900,
-          pricePerSeat: 3000.0,
-        ),
-      ],
-      creationDate: DateTime(2025, 8, 5),
-    ),
-    Event(
-      name: 'Zakir Khan Live',
-      description: 'Stand-up comedy by Zakir Khan',
-      imageUrl: 'https://placehold.co/300x400/c0392b/fff?text=Zakir',
-      date: '2025-06-10T20:00:00',
-      location: 'Hard Rock Cafe, Delhi',
-      category: 'COMEDY',
-      seatCategories: [
-        SeatCategory(
-          categoryName: 'Premium',
-          totalSeats: 100,
-          availableSeats: 80,
-          pricePerSeat: 1500.0,
-        ),
-        SeatCategory(
-          categoryName: 'Standard',
-          totalSeats: 200,
-          availableSeats: 100,
-          pricePerSeat: 999.0,
-        ),
-      ],
-      creationDate: DateTime(2025, 5, 1),
-    ),
-    Event(
-      name: 'India vs Australia',
-      description: 'Cricket match between India and Australia',
-      imageUrl: 'https://placehold.co/300x400/3498db/fff?text=Cricket',
-      date: '2025-11-05T14:00:00',
-      location: 'Wankhede Stadium, Mumbai',
-      category: 'SPORTS',
-      seatCategories: [
-        SeatCategory(
-          categoryName: 'Premium',
-          totalSeats: 2000,
-          availableSeats: 500,
-          pricePerSeat: 3000.0,
-        ),
-        SeatCategory(
-          categoryName: 'General',
-          totalSeats: 8000,
-          availableSeats: 6000,
-          pricePerSeat: 1500.0,
-        ),
-      ],
-      creationDate: DateTime(2025, 8, 1),
-    ),
-  ];
+  final TextEditingController _searchController = TextEditingController();
+  final List<String> _recentSearches = [];
+
+  void _handleSearchSubmitted(String query) {
+    final trimmedQuery = query.trim();
+
+    if (trimmedQuery.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _recentSearches.remove(trimmedQuery);
+      _recentSearches.insert(0, trimmedQuery);
+
+      // MODIFIED: The limit is now 10
+      if (_recentSearches.length > 10) {
+        _recentSearches.removeLast();
+      }
+    });
+
+    _searchController.clear();
+    print('Searching for: $trimmedQuery');
+  }
+
+  Future<void> _fetchEvents({bool isRefresh = false}) async {
+    try {
+      setState(() {
+        if (isRefresh) {
+          _isRefreshing = true;
+        } else {
+          _isLoading = true;
+        }
+        _errorMessage = null;
+      });
+
+      final baseUrl = ApiService.baseUrl;
+      print('=== API Connection Debug ===');
+      print('Base URL: $baseUrl');
+      print('Full endpoint: $baseUrl/events');
+      print('Config useLocalServer: ${AppConfig.useLocalServer}');
+      print('Config androidEmulatorUrl: ${AppConfig.androidEmulatorUrl}');
+      print('Config localhostUrl: ${AppConfig.localhostUrl}');
+      print('Is Refresh: $isRefresh');
+      print('===========================');
+
+      final response = await ApiService.get('/events');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        print('Events loaded successfully: ${data.length} events');
+
+        setState(() {
+          _allEvents = data.map((json) => Event.fromJson(json)).toList();
+          _isLoading = false;
+          _isRefreshing = false;
+        });
+
+        if (isRefresh && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Events refreshed successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _isLoading = false;
+          _isRefreshing = false;
+          _errorMessage = 'Server error: ${response.statusCode}';
+        });
+        print('Failed to load events: ${response.statusCode}');
+
+        if (isRefresh && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Failed to refresh: Server error ${response.statusCode}',
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      String errorMsg = 'Network error occurred';
+
+      if (e.toString().contains('Connection refused')) {
+        errorMsg =
+        'Cannot connect to server. Please check if your backend is running on port 8080.';
+      } else if (e.toString().contains('SocketException')) {
+        errorMsg =
+        'Network connection failed. Please check your internet connection and server status.';
+      } else if (e.toString().contains('localhost')) {
+        errorMsg =
+        'Server connection failed. For mobile devices, use 10.0.2.2:8080 instead of localhost:8080.';
+      }
+
+      setState(() {
+        _isLoading = false;
+        _isRefreshing = false;
+        _errorMessage = errorMsg;
+      });
+      print('An error occurred: $e');
+
+      if (isRefresh && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Refresh failed: $errorMsg'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+  }
 
   List<Event> _getRecommendedEvents() {
     final now = DateTime.now();
     return _allEvents.where((event) {
-      final isNew = event.creationDate != null && 
-          now.difference(event.creationDate!).inDays <= 30;
+      final isNew =
+          event.creationDate != null &&
+              now.difference(event.creationDate!).inDays <= 30;
       final isNotFull = event.reservationPercentage < 50;
       return isNew || isNotFull;
     }).toList();
   }
-  // --- END of added logic ---
 
   @override
   Widget build(BuildContext context) {
@@ -162,6 +191,7 @@ class _SearchPageState extends State<SearchPage> {
     return TextField(
       controller: _searchController,
       style: const TextStyle(color: Colors.white),
+      onSubmitted: _handleSearchSubmitted,
       decoration: InputDecoration(
         hintText: "Search for Events, Plays, Activities..",
         hintStyle: TextStyle(color: Colors.grey[600]),
@@ -188,6 +218,12 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildRecentSearchChips() {
+    if (_recentSearches.isEmpty) {
+      return Text(
+        'Your search history will appear here.',
+        style: TextStyle(color: Colors.grey[500]),
+      );
+    }
     return Wrap(
       spacing: 8.0,
       runSpacing: 8.0,
@@ -211,7 +247,6 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // --- UPDATED: This widget now builds the trending events with the old list item style ---
   Widget _buildTrendingEventsList() {
     final trendingEvents = _getRecommendedEvents().take(3).toList();
 
@@ -227,7 +262,6 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // --- NEW: Re-added the old list item builder for the trending section ---
   Widget _buildEventListItem({required Event event}) {
     return InkWell(
       onTap: () {

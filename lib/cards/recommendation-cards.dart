@@ -6,13 +6,11 @@ class RecommendationCard extends StatefulWidget {
   final Event event;
   final String? categoryTitle;
   final VoidCallback onTap;
-  final VoidCallback onFavoriteTap;
 
   const RecommendationCard({
     super.key,
     required this.event,
     required this.onTap,
-    required this.onFavoriteTap,
     required this.categoryTitle,
   });
 
