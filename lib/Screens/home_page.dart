@@ -19,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   // --- State for API data and loading status ---
   List<Event> _allEvents = [];
   bool _isLoading = true;
+  bool _isRefreshing = false; // NEW: Track refresh state separately
   String? _errorMessage;
 
   @override
@@ -28,11 +29,15 @@ class _HomePageState extends State<HomePage> {
     _fetchEvents();
   }
 
-  // --- FIX: Fetches and PARSES all events once ---
-  Future<void> _fetchEvents() async {
+  // --- ENHANCED: Fetches and PARSES all events with refresh support ---
+  Future<void> _fetchEvents({bool isRefresh = false}) async {
     try {
       setState(() {
-        _isLoading = true;
+        if (isRefresh) {
+          _isRefreshing = true;
+        } else {
+          _isLoading = true;
+        }
         _errorMessage = null;
       });
 
@@ -44,25 +49,51 @@ class _HomePageState extends State<HomePage> {
       print('Config useLocalServer: ${AppConfig.useLocalServer}');
       print('Config androidEmulatorUrl: ${AppConfig.androidEmulatorUrl}');
       print('Config localhostUrl: ${AppConfig.localhostUrl}');
+      print('Is Refresh: $isRefresh');
       print('===========================');
 
       final response = await ApiService.get('/events');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        print(response);
+        print('Events loaded successfully: ${data.length} events');
+
         setState(() {
           // Parse the list of maps into a list of Event objects
           _allEvents = data.map((json) => Event.fromJson(json)).toList();
           _isLoading = false;
+          _isRefreshing = false;
         });
+
+        // Show success message only on manual refresh
+        if (isRefresh && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Events refreshed successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       } else {
         // Handle server errors
         setState(() {
           _isLoading = false;
+          _isRefreshing = false;
           _errorMessage = 'Server error: ${response.statusCode}';
         });
         print('Failed to load events: ${response.statusCode}');
+
+        // Show error message on refresh
+        if (isRefresh && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to refresh: Server error ${response.statusCode}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
       }
     } catch (e) {
       // Handle network or other errors
@@ -70,24 +101,43 @@ class _HomePageState extends State<HomePage> {
 
       if (e.toString().contains('Connection refused')) {
         errorMsg =
-            'Cannot connect to server. Please check if your backend is running on port 8080.';
+        'Cannot connect to server. Please check if your backend is running on port 8080.';
       } else if (e.toString().contains('SocketException')) {
         errorMsg =
-            'Network connection failed. Please check your internet connection and server status.';
+        'Network connection failed. Please check your internet connection and server status.';
       } else if (e.toString().contains('localhost')) {
         errorMsg =
-            'Server connection failed. For mobile devices, use 10.0.2.2:8080 instead of localhost:8080.';
+        'Server connection failed. For mobile devices, use 10.0.2.2:8080 instead of localhost:8080.';
       }
 
       setState(() {
         _isLoading = false;
+        _isRefreshing = false;
         _errorMessage = errorMsg;
       });
       print('An error occurred: $e');
 
-      // Load mock data for development/testing
-      _loadMockData();
+      // Show error message on refresh
+      if (isRefresh && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Refresh failed: $errorMsg'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
+      // Load mock data for development/testing (only if not refreshing)
+      if (!isRefresh || _allEvents.isEmpty) {
+        _loadMockData();
+      }
     }
+  }
+
+  // NEW: Enhanced refresh handler
+  Future<void> _handleRefresh() async {
+    await _fetchEvents(isRefresh: true);
   }
 
   // Load mock data when API is not available
@@ -167,77 +217,115 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.deepPurpleAccent,
-                ),
-              )
+          child: CircularProgressIndicator(
+            color: Colors.deepPurpleAccent,
+          ),
+        )
             : _errorMessage != null
             ? _buildErrorWidget()
             : RefreshIndicator(
-                onRefresh: _fetchEvents,
-                color: Colors.deepPurpleAccent,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 15.0,
-                          vertical: 8.0,
-                        ),
-                        child: Image(
-                          image: const AssetImage("assets/logo.png"),
-                          width: 180,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Text(
-                                'Logo not found',
-                                style: TextStyle(color: Colors.red),
-                              ),
+          onRefresh: _handleRefresh,
+          color: Colors.deepPurpleAccent,
+          backgroundColor: Colors.grey[900],
+          strokeWidth: 3.0,
+          displacement: 40.0, // Distance from top of the widget
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(), // Ensure scroll is always enabled
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 15.0,
+                        vertical: 8.0,
+                      ),
+                      child: Image(
+                        image: const AssetImage("assets/logo.png"),
+                        width: 180,
+                        errorBuilder: (context, error, stackTrace) =>
+                        const Text(
+                          'Logo not found',
+                          style: TextStyle(color: Colors.red),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSearchBar(context, widget.onNavigate),
+                          const SizedBox(height: 18),
+                          _buildCategoryIcons(),
+                          const SizedBox(height: 18),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // NEW: Show refresh indicator when refreshing
+                    if (_isRefreshing)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _buildSearchBar(context, widget.onNavigate),
-                            const SizedBox(height: 18),
-                            _buildCategoryIcons(),
-                            const SizedBox(height: 18),
+                            SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(
+                                color: Colors.deepPurpleAccent,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Refreshing events...',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      EventCategoryRow(
-                        categoryTitle: 'Recommendations',
-                        events: _getRecommendedEvents(),
-                      ),
-                      const SizedBox(height: 24),
-                      EventCategoryRow(
-                        categoryTitle: 'Music Concerts',
-                        events: _getEventsByCategory('Music'),
-                      ),
-                      const SizedBox(height: 24),
-                      EventCategoryRow(
-                        categoryTitle: 'Comedy Shows',
-                        events: _getEventsByCategory('Comedy'),
-                      ),
-                      const SizedBox(height: 24),
-                      EventCategoryRow(
-                        categoryTitle: 'Theatre & Arts',
-                        events: _getEventsByCategory('Theatre'),
-                      ),
-                      const SizedBox(height: 24),
-                      EventCategoryRow(
-                        categoryTitle: 'Sporting Events',
-                        events: _getEventsByCategory('Sports'),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+
+                    EventCategoryRow(
+                      categoryTitle: 'Recommendations',
+                      events: _getRecommendedEvents(),
+                    ),
+                    const SizedBox(height: 24),
+                    EventCategoryRow(
+                      categoryTitle: 'Music Concerts',
+                      events: _getEventsByCategory('Music'),
+                    ),
+                    const SizedBox(height: 24),
+                    EventCategoryRow(
+                      categoryTitle: 'Comedy Shows',
+                      events: _getEventsByCategory('Comedy'),
+                    ),
+                    const SizedBox(height: 24),
+                    EventCategoryRow(
+                      categoryTitle: 'Theatre & Arts',
+                      events: _getEventsByCategory('Theatre'),
+                    ),
+                    const SizedBox(height: 24),
+                    EventCategoryRow(
+                      categoryTitle: 'Sporting Events',
+                      events: _getEventsByCategory('Sports'),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
+            ],
+          ),
+        ),
       ),
+
     );
   }
 
@@ -315,37 +403,82 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ENHANCED: Better error widget with refresh option
   Widget _buildErrorWidget() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, color: Colors.red, size: 64),
-          const SizedBox(height: 16),
-          Text(
-            'Failed to load events',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return RefreshIndicator(
+      onRefresh: _handleRefresh,
+      color: Colors.deepPurpleAccent,
+      backgroundColor: Colors.grey[900],
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 16),
+                const Text(
+                  'Failed to load events',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _errorMessage ?? 'Unknown error',
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _isRefreshing ? null : () => _fetchEvents(),
+                      icon: _isRefreshing
+                          ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Icon(Icons.refresh),
+                      label: Text(_isRefreshing ? 'Retrying...' : 'Retry'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurpleAccent,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    OutlinedButton.icon(
+                      onPressed: _loadMockData,
+                      icon: const Icon(Icons.data_object),
+                      label: const Text('Load Sample Data'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white54),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Pull down to refresh',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            _errorMessage ?? 'Unknown error',
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _fetchEvents,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurpleAccent,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Retry'),
-          ),
-        ],
+        ),
       ),
     );
   }

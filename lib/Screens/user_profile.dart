@@ -82,10 +82,11 @@ class _UserProfileState extends State<UserProfile> {
                   _buildSettingsSection(
                     title: 'General',
                     items: [
-                      _buildSettingsItem(Icons.person_2_outlined, 'Account Details'),
-                      _buildSettingsItem(Icons.payment_outlined, 'Payment Modes'),
-                      _buildSettingsItem(Icons.history, 'Booking history'),
-                      _buildSettingsItem(Icons.support_agent_outlined, 'Support'),
+                      _buildSettingsItem(Icons.person_2_outlined, 'Account Details', '/accountDetails'),
+                      _buildSettingsItem(Icons.event_available, 'List Your Event','/listEvent'),
+                      _buildSettingsItem(Icons.payment_outlined, 'Payment Modes',''),
+                      _buildSettingsItem(Icons.history, 'Booking history',''),
+                      _buildSettingsItem(Icons.support_agent_outlined, 'Support',''),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -94,7 +95,7 @@ class _UserProfileState extends State<UserProfile> {
                     title: 'Accounts & subscription',
                     items: [
                       _buildToggleItem(Icons.notifications_outlined, 'Notification'),
-                      _buildSettingsItem(Icons.logout, 'Logout'),
+                      _buildSettingsItem(Icons.logout, 'Logout',''),
                     ],
                   ),
                 ],
@@ -154,16 +155,13 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   // Helper to build a standard settings item with a trailing arrow
-  Widget _buildSettingsItem(IconData icon, String title) {
+  Widget _buildSettingsItem(IconData icon, String title, String route) {
     return ListTile(
       leading: Icon(icon, color: Colors.white70),
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AccountDetailsPage()),
-        );
+        Navigator.pushNamed(context, route);
       },
     );
   }

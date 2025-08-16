@@ -8,6 +8,8 @@ import 'package:fomo_fix/Screens/login_page.dart';
 import 'package:fomo_fix/splash_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'Screens/account_details_page.dart';
+
 void main() {
   runApp(const Main());
 }
@@ -31,6 +33,8 @@ class _MainState extends State<Main> {
         '/landing': (context) => LoginPage(),
         '/bottomNav': (context)=> BottomNavBar(),
         '/eventListing' :(context)=> EventListing(),
+        '/accountDetails' :(context)=> AccountDetailsPage(),
+        '/listEvent' : (context)=> EventListing(),
       },
     );
   }
