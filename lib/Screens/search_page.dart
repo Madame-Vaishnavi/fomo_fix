@@ -15,12 +15,27 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   List<Event> _allEvents = [];
+  List<Event> _filteredEvents = [];
   bool _isLoading = true;
   bool _isRefreshing = false;
   String? _errorMessage;
 
   final TextEditingController _searchController = TextEditingController();
   final List<String> _recentSearches = [];
+  String _currentSearchQuery = '';
+
+  void _handleSearchChanged(String query) {
+    setState(() {
+      _currentSearchQuery = query.trim();
+      if (_currentSearchQuery.isEmpty) {
+        _filteredEvents = [];
+      } else {
+        _filteredEvents = _allEvents.where((event) {
+          return event.name.toLowerCase().contains(_currentSearchQuery.toLowerCase());
+        }).toList();
+      }
+    });
+  }
 
   void _handleSearchSubmitted(String query) {
     final trimmedQuery = query.trim();
@@ -39,8 +54,17 @@ class _SearchPageState extends State<SearchPage> {
       }
     });
 
-    _searchController.clear();
     print('Searching for: $trimmedQuery');
+  }
+
+  void _selectRecentSearch(String searchTerm) {
+    _searchController.text = searchTerm;
+    _handleSearchChanged(searchTerm);
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _handleSearchChanged('');
   }
 
   Future<void> _fetchEvents({bool isRefresh = false}) async {
@@ -74,6 +98,12 @@ class _SearchPageState extends State<SearchPage> {
           _allEvents = data.map((json) => Event.fromJson(json)).toList();
           _isLoading = false;
           _isRefreshing = false;
+          // Update filtered events if there's an active search
+          if (_currentSearchQuery.isNotEmpty) {
+            _filteredEvents = _allEvents.where((event) {
+              return event.name.toLowerCase().contains(_currentSearchQuery.toLowerCase());
+            }).toList();
+          }
         });
 
         if (isRefresh && mounted) {
@@ -144,6 +174,12 @@ class _SearchPageState extends State<SearchPage> {
     _fetchEvents();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   List<Event> _getRecommendedEvents() {
     final now = DateTime.now();
     return _allEvents.where((event) {
@@ -167,20 +203,25 @@ class _SearchPageState extends State<SearchPage> {
         backgroundColor: Colors.black,
         elevation: 0,
         automaticallyImplyLeading: false,
+        actions: [
+          if (_currentSearchQuery.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: () => _fetchEvents(isRefresh: true),
+            ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: ListView(
+        child: Column(
           children: [
             _buildSearchField(),
-            const SizedBox(height: 24),
-            _buildSectionHeader('Recent Searches'),
-            const SizedBox(height: 12),
-            _buildRecentSearchChips(),
-            const SizedBox(height: 24),
-            _buildSectionHeader('Trending Events'),
             const SizedBox(height: 16),
-            _buildTrendingEventsList(),
+            Expanded(
+              child: _currentSearchQuery.isEmpty
+                  ? _buildDefaultContent()
+                  : _buildSearchResults(),
+            ),
           ],
         ),
       ),
@@ -191,11 +232,18 @@ class _SearchPageState extends State<SearchPage> {
     return TextField(
       controller: _searchController,
       style: const TextStyle(color: Colors.white),
+      onChanged: _handleSearchChanged,
       onSubmitted: _handleSearchSubmitted,
       decoration: InputDecoration(
         hintText: "Search for Events, Plays, Activities..",
         hintStyle: TextStyle(color: Colors.grey[600]),
         prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+        suffixIcon: _currentSearchQuery.isNotEmpty
+            ? IconButton(
+          icon: Icon(Icons.clear, color: Colors.grey[600]),
+          onPressed: _clearSearch,
+        )
+            : null,
         filled: true,
         fillColor: Colors.grey[900],
         border: OutlineInputBorder(
@@ -203,6 +251,92 @@ class _SearchPageState extends State<SearchPage> {
           borderSide: BorderSide.none,
         ),
       ),
+    );
+  }
+
+  Widget _buildDefaultContent() {
+    return ListView(
+      children: [
+        _buildSectionHeader('Recent Searches'),
+        const SizedBox(height: 12),
+        _buildRecentSearchChips(),
+        const SizedBox(height: 24),
+        _buildSectionHeader('Trending Events'),
+        const SizedBox(height: 16),
+        _buildTrendingEventsList(),
+      ],
+    );
+  }
+
+  Widget _buildSearchResults() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, color: Colors.grey[600], size: 64),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[400]),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _fetchEvents(isRefresh: true),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_filteredEvents.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, color: Colors.grey[600], size: 64),
+            const SizedBox(height: 16),
+            Text(
+              'No events found for "$_currentSearchQuery"',
+              style: TextStyle(color: Colors.grey[400], fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try searching with different keywords',
+              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${_filteredEvents.length} events found',
+          style: TextStyle(color: Colors.grey[400], fontSize: 14),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: ListView.separated(
+            itemCount: _filteredEvents.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final event = _filteredEvents[index];
+              return _buildEventListItem(event: event, highlightQuery: _currentSearchQuery);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -228,27 +362,67 @@ class _SearchPageState extends State<SearchPage> {
       spacing: 8.0,
       runSpacing: 8.0,
       children: _recentSearches.map((term) {
-        return Chip(
-          label: Text(term, style: const TextStyle(color: Colors.white70)),
-          backgroundColor: Colors.grey[850],
-          deleteIcon: const Icon(Icons.close, size: 16, color: Colors.white70),
-          onDeleted: () {
-            setState(() {
-              _recentSearches.remove(term);
-            });
-          },
-          side: BorderSide.none,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
+        return GestureDetector(
+          onTap: () => _selectRecentSearch(term),
+          child: Chip(
+            label: Text(term, style: const TextStyle(color: Colors.white70)),
+            backgroundColor: Colors.grey[850],
+            deleteIcon: const Icon(Icons.close, size: 16, color: Colors.white70),
+            onDeleted: () {
+              setState(() {
+                _recentSearches.remove(term);
+              });
+            },
+            side: BorderSide.none,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            elevation: 0,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          elevation: 0,
         );
       }).toList(),
     );
   }
 
   Widget _buildTrendingEventsList() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          children: [
+            Icon(Icons.error_outline, color: Colors.grey[600], size: 48),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[400]),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _fetchEvents(isRefresh: true),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
     final trendingEvents = _getRecommendedEvents().take(3).toList();
+
+    if (trendingEvents.isEmpty) {
+      return Center(
+        child: Text(
+          'No trending events available',
+          style: TextStyle(color: Colors.grey[500]),
+        ),
+      );
+    }
 
     return ListView.separated(
       shrinkWrap: true,
@@ -262,7 +436,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildEventListItem({required Event event}) {
+  Widget _buildEventListItem({required Event event, String? highlightQuery}) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -297,8 +471,9 @@ class _SearchPageState extends State<SearchPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    event.name,
+                  _buildHighlightedText(
+                    text: event.name,
+                    query: highlightQuery,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -320,6 +495,48 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHighlightedText({
+    required String text,
+    String? query,
+    required TextStyle style,
+  }) {
+    if (query == null || query.isEmpty) {
+      return Text(text, style: style);
+    }
+
+    final lowerText = text.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    final index = lowerText.indexOf(lowerQuery);
+
+    if (index == -1) {
+      return Text(text, style: style);
+    }
+
+    return RichText(
+      text: TextSpan(
+        children: [
+          if (index > 0)
+            TextSpan(
+              text: text.substring(0, index),
+              style: style,
+            ),
+          TextSpan(
+            text: text.substring(index, index + query.length),
+            style: style.copyWith(
+              backgroundColor: Colors.yellow.withOpacity(0.3),
+              color: Colors.yellow[100],
+            ),
+          ),
+          if (index + query.length < text.length)
+            TextSpan(
+              text: text.substring(index + query.length),
+              style: style,
+            ),
+        ],
       ),
     );
   }

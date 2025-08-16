@@ -66,7 +66,7 @@ class _CategoryPageState extends State<CategoryPage> {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2, // Display two cards per row
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.75, // Adjust aspect ratio for card height
+                childAspectRatio: 0.70, // Adjust aspect ratio for card height
               ),
               itemCount: _paginatedEvents.length,
               itemBuilder: (context, index) {
