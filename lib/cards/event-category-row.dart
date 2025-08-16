@@ -65,6 +65,7 @@ class EventCategoryRow extends StatelessWidget {
               final event = events[index];
               return RecommendationCard(
                 event: event,
+                categoryTitle: categoryTitle,
                 onTap: () {
                   // Navigate to the booking page with the specific event details
                   Navigator.push(

@@ -74,6 +74,7 @@ class _CategoryPageState extends State<CategoryPage> {
                 final event = _paginatedEvents[index];
                 return RecommendationCard(
                   event: event,
+                  categoryTitle: widget.categoryTitle,
                   onTap: () {
                     Navigator.push(
                       context,

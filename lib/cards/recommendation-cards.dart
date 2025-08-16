@@ -4,6 +4,7 @@ import '../models/event.dart';
 // A reusable widget for the smaller recommendation cards.
 class RecommendationCard extends StatefulWidget {
   final Event event;
+  final String? categoryTitle;
   final VoidCallback onTap;
   final VoidCallback onFavoriteTap;
 
@@ -12,6 +13,7 @@ class RecommendationCard extends StatefulWidget {
     required this.event,
     required this.onTap,
     required this.onFavoriteTap,
+    required this.categoryTitle,
   });
 
   @override
@@ -54,6 +56,7 @@ class _RecommendationCardState extends State<RecommendationCard> {
                   ),
                 ),
                 // Category badge
+                if(widget.categoryTitle == "Recommendations")
                 Positioned(
                   top: 8,
                   left: 8,
