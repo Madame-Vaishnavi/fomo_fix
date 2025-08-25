@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../services/api-service.dart';
 import '../models/event.dart'; // Your updated event model
-import '../config.dart';
+import '../config/config.dart';
 import '../widgets/authenticated_image.dart';
 
 class BookingPage extends StatefulWidget {

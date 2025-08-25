@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fomo_fix/Screens/home_page.dart';
-import 'package:fomo_fix/Screens/search_page.dart';
-import 'package:fomo_fix/Screens/user_profile.dart';
+import 'package:fomo_fix/home/home_page.dart';
+import 'package:fomo_fix/events/search_page.dart';
+import 'package:fomo_fix/profile/user_profile.dart';
 
 
 

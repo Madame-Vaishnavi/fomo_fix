@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import '../config.dart';
+import '../config/config.dart';
 
 class AuthenticatedImage extends StatefulWidget {
   final String? imageUrl;

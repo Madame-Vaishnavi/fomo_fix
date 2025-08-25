@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fomo_fix/services/api-service.dart';
-import 'package:fomo_fix/cards/event-category-row.dart';
-import 'package:fomo_fix/Screens/category_page.dart';
-import 'package:fomo_fix/config.dart';
+import 'package:fomo_fix/events/category_page.dart';
+import 'package:fomo_fix/config/config.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../models/event.dart';
+import '../widgets/cards/event_category_row.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int) onNavigate;

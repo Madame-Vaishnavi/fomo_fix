@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:fomo_fix/Screens/event_listing.dart';
-import 'package:fomo_fix/Screens/booking-page.dart';
-import 'package:fomo_fix/bottom_nav.dart';
-import 'package:fomo_fix/Screens/home_page.dart';
-import 'package:fomo_fix/Screens/landing_page.dart';
-import 'package:fomo_fix/Screens/login_page.dart';
-import 'package:fomo_fix/Screens/signup_page.dart';
-import 'package:fomo_fix/splash_screen.dart';
+import 'package:fomo_fix/events/event_listing.dart';
+import 'package:fomo_fix/booking/booking_page.dart';
+import 'package:fomo_fix/navigation/bottom_nav.dart';
+import 'package:fomo_fix/home/home_page.dart';
+import 'package:fomo_fix/auth/landing_page.dart';
+import 'package:fomo_fix/auth/login_page.dart';
+import 'package:fomo_fix/auth/signup_page.dart';
+import 'package:fomo_fix/home/splash_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'Screens/account_details_page.dart';
+import 'profile/account_details_page.dart';
 
 void main() {
   runApp(const Main());

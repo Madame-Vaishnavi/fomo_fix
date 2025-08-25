@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/event.dart';
-import '../config.dart';
-import '../widgets/authenticated_image.dart';
+import '../../models/event.dart';
+import '../authenticated_image.dart';
 
 // A reusable widget for the smaller recommendation cards.
 class RecommendationCard extends StatefulWidget {
@@ -184,7 +183,7 @@ class _RecommendationCardState extends State<RecommendationCard> {
                             children: <TextSpan>[
                               TextSpan(
                                 text:
-                                    "${event.lowestPriceCategory?.pricePerSeat.toString()} onwards",
+                                "${event.lowestPriceCategory?.pricePerSeat.toString()} onwards",
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,

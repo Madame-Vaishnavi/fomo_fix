@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import '../services/api-service.dart';
-import '../config.dart';
+import '../config/config.dart';
 import '../models/event.dart';
-import 'booking-page.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+  import '../booking/booking_page.dart';
 import '../widgets/authenticated_image.dart';
 
 class SearchPage extends StatefulWidget {

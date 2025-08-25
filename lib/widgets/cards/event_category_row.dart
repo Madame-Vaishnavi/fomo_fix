@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:fomo_fix/Screens/category_page.dart';
-import '../Screens/booking-page.dart';
-import '../models/event.dart';
-import '../cards/recommendation-cards.dart'; // Adjust the import path as needed
+import 'package:fomo_fix/widgets/cards/recommendation_card.dart';
+import '../../booking/booking-page.dart';
+import '../../events/category_page.dart';
+import '../../models/event.dart';
 
 
 class EventCategoryRow extends StatelessWidget {

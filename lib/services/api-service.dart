@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../config.dart';
+import '../config/config.dart';
 
 class ApiService {
   // Get base URL from configuration
