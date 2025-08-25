@@ -179,7 +179,11 @@ class _UserProfileState extends State<UserProfile> {
                         'Payment Modes',
                         '',
                       ),
-                      _buildSettingsItem(Icons.history, 'Booking history', ''),
+                      _buildSettingsItem(
+                        Icons.history,
+                        'Booking history',
+                        '/bookingHistory',
+                      ),
                       _buildSettingsItem(
                         Icons.support_agent_outlined,
                         'Support',

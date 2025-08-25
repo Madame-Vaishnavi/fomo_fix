@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fomo_fix/events/event_listing.dart';
-import 'package:fomo_fix/booking/booking_page.dart';
-import 'package:fomo_fix/navigation/bottom_nav.dart';
-import 'package:fomo_fix/home/home_page.dart';
-import 'package:fomo_fix/auth/landing_page.dart';
 import 'package:fomo_fix/auth/login_page.dart';
 import 'package:fomo_fix/auth/signup_page.dart';
 import 'package:fomo_fix/home/splash_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'navigation/bottom_nav.dart';
 import 'profile/account_details_page.dart';
+import 'profile/booking_history_screen.dart';
 
 void main() {
   runApp(const Main());
@@ -36,6 +34,7 @@ class _MainState extends State<Main> {
         '/bottomNav': (context) => BottomNavBar(),
         '/accountDetails': (context) => AccountDetailsPage(),
         '/listEvent': (context) => EventListing(),
+        '/bookingHistory': (context) => BookingHistoryScreen(),
       },
     );
   }

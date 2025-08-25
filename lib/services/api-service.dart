@@ -72,6 +72,17 @@ class ApiService {
     return http.patch(url, headers: headers, body: jsonEncode(body));
   }
 
+  /// Performs an authenticated PATCH request.
+  static Future<http.Response> patchWithAuth(
+    String token,
+    String endpoint,
+    dynamic body,
+  ) async {
+    final url = Uri.parse('$baseUrl$endpoint');
+    final headers = await _getAuthHeaders(token);
+    return http.patch(url, headers: headers, body: jsonEncode(body));
+  }
+
   /// Performs a DELETE request.
   static Future<http.Response> delete(
     String endpoint, {
@@ -155,5 +166,28 @@ class ApiService {
   /// Gets user profile (requires authentication)
   static Future<http.Response> getUserProfile(String token) async {
     return getWithAuth('/users/profile', token);
+  }
+
+  /// Updates user username (requires authentication)
+  static Future<http.Response> updateUsername(
+    String token,
+    String newUsername,
+  ) async {
+    return patchWithAuth('/users/username', token, {
+      'newUsername': newUsername,
+    });
+  }
+
+  /// Gets user booking history with payments (requires authentication)
+  static Future<http.Response> getBookingHistory(String token) async {
+    return getWithAuth('/users/booking-history', token);
+  }
+
+  /// Gets user booking history with payments by userId (no auth)
+  static Future<http.Response> getBookingHistoryByUserId(String userId,String token) async {
+    final endpoint =
+        '/users/booking-history/by-userId?userId=' +
+        Uri.encodeComponent(userId);
+    return getWithAuth(endpoint,token);
   }
 }
