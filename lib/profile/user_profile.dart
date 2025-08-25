@@ -73,10 +73,13 @@ class _UserProfileState extends State<UserProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SingleChildScrollView(
-        // Added to prevent overflow
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: RefreshIndicator(
+        color: Colors.deepPurpleAccent,
+        onRefresh: _loadUserProfile,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(), // Ensures pull-to-refresh works when content is short
+          child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // --- Header Section with Background Image and Profile Picture ---
             Stack(
@@ -209,6 +212,7 @@ class _UserProfileState extends State<UserProfile> {
           ],
         ),
       ),
+      )
     );
   }
 

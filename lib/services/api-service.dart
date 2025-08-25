@@ -170,13 +170,14 @@ class ApiService {
 
   /// Updates user username (requires authentication)
   static Future<http.Response> updateUsername(
-    String token,
-    String newUsername,
-  ) async {
-    return patchWithAuth('/users/username', token, {
+      String token,
+      String newUsername,
+      ) async {
+    return patchWithAuth(token, '/users/username', {
       'newUsername': newUsername,
     });
   }
+
 
   /// Gets user booking history with payments (requires authentication)
   static Future<http.Response> getBookingHistory(String token) async {

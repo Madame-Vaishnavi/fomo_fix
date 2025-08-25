@@ -140,7 +140,8 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
       }
 
       final response = await ApiService.updateUsername(token, newUsername);
-      print(response.body);
+      print(newUsername);
+      print(response.statusCode);
       print(token);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -181,6 +182,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
         });
       } else {
         String message = 'Failed to update username';
+        print(response.body);
         if (response.body.isNotEmpty) {
           try {
             final errorData = json.decode(response.body);

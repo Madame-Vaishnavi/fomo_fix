@@ -16,6 +16,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
   BookingHistoryResponse? _bookingHistory;
   bool _isLoading = true;
   String? _error;
+  int? _expandedCardIndex; // Track which card is expanded (null = none expanded)
+
 
   @override
   void initState() {
@@ -141,103 +143,144 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
         itemCount: _bookingHistory!.bookings.length,
         itemBuilder: (context, index) {
           final booking = _bookingHistory!.bookings[index];
-          return _buildBookingCard(booking);
+          return _buildBookingCard(booking, index); // Pass index
         },
+
       ),
     );
   }
 
-  Widget _buildBookingCard(BookingWithPayment booking) {
+  Widget _buildBookingCard(BookingWithPayment booking, int index) {
+    final isExpanded = _expandedCardIndex == index;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       color: Colors.grey[900],
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            // Toggle: if this card is expanded, close it; otherwise, open it
+            _expandedCardIndex = isExpanded ? null : index;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    booking.eventName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                // Basic booking info (always visible)
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTag(
-                      booking.status,
-                      _getBookingStatusColor(booking.status),
+                    Expanded(
+                      child: Text(
+                        booking.eventName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 6),
-                    _buildTag(
-                      _getPaymentStatusLabel(booking.paymentInfo?.status),
-                      _getPaymentStatusColor(booking.paymentInfo?.status),
+                    Row(
+                      children: [
+                        _buildTag(
+                          booking.status,
+                          _getBookingStatusColor(booking.status),
+                        ),
+                        const SizedBox(width: 6),
+                        _buildTag(
+                          _getPaymentStatusLabel(booking.paymentInfo?.status),
+                          _getPaymentStatusColor(booking.paymentInfo?.status),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              booking.categoryName,
-              style: TextStyle(color: Colors.grey[400], fontSize: 14),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(Icons.event_seat, color: Colors.grey[400], size: 16),
-                const SizedBox(width: 4),
+                const SizedBox(height: 8),
                 Text(
-                  '${booking.seatBooked} seats',
+                  booking.categoryName,
                   style: TextStyle(color: Colors.grey[400], fontSize: 14),
                 ),
-                const SizedBox(width: 16),
-                Icon(Icons.attach_money, color: Colors.grey[400], size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  '\$${booking.price.toStringAsFixed(2)}',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(Icons.event_seat, color: Colors.grey[400], size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${booking.seatBooked} seats',
+                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    ),
+                    const SizedBox(width: 16),
+                    Icon(Icons.attach_money, color: Colors.grey[400], size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      '\$${booking.price.toStringAsFixed(2)}',
+                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    ),
+                    const Spacer(),
+                    // Expand/collapse indicator
+                    Icon(
+                      isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      color: Colors.grey[400],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.schedule, color: Colors.grey[400], size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Booked on ${_formatDate(booking.bookingTime)}',
+                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    ),
+                  ],
+                ),
+
+                // Payment info (conditionally visible with animation)
+                AnimatedCrossFade(
+                  duration: const Duration(milliseconds: 300),
+                  crossFadeState: isExpanded
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  firstChild: const SizedBox.shrink(), // Hidden state
+                  secondChild: booking.paymentInfo != null
+                      ? Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      const Divider(color: Colors.grey),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Payment Information',
+                        style: TextStyle(
+                          color: Colors.grey[300],
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildPaymentInfo(booking.paymentInfo!),
+                    ],
+                  )
+                      : const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Text(
+                      'No payment information available',
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.schedule, color: Colors.grey[400], size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  'Booked on ${_formatDate(booking.bookingTime)}',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 14),
-                ),
-              ],
-            ),
-            if (booking.paymentInfo != null) ...[
-              const SizedBox(height: 12),
-              const Divider(color: Colors.grey),
-              const SizedBox(height: 8),
-              Text(
-                'Payment Information',
-                style: TextStyle(
-                  color: Colors.grey[300],
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildPaymentInfo(booking.paymentInfo!),
-            ],
-          ],
+          ),
         ),
       ),
     );
   }
+
 
   Widget _buildPaymentInfo(PaymentInfo paymentInfo) {
     return Column(
