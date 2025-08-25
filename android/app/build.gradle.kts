@@ -37,8 +37,33 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    // Add configuration to handle duplicate classes
+    packagingOptions {
+        pickFirst("**/libc++_shared.so")
+        pickFirst("**/libjsc.so")
+        exclude("META-INF/DEPENDENCIES")
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/LICENSE.txt")
+        exclude("META-INF/license.txt")
+        exclude("META-INF/NOTICE")
+        exclude("META-INF/NOTICE.txt")
+        exclude("META-INF/notice.txt")
+        exclude("META-INF/ASL2.0")
+        exclude("META-INF/*.kotlin_module")
+    }
 }
 
 flutter {
     source = "../.."
+}
+
+// Add dependency resolution strategy to prevent conflicts
+configurations.all {
+    resolutionStrategy {
+        force("androidx.core:core-ktx:1.12.0")
+        force("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+        force("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+        force("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0")
+    }
 }

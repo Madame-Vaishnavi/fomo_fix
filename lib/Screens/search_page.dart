@@ -1,10 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import '../api-service.dart';
+import '../services/api-service.dart';
 import '../config.dart';
 import '../models/event.dart';
 import 'booking-page.dart';
+import '../widgets/authenticated_image.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -31,7 +32,9 @@ class _SearchPageState extends State<SearchPage> {
         _filteredEvents = [];
       } else {
         _filteredEvents = _allEvents.where((event) {
-          return event.name.toLowerCase().contains(_currentSearchQuery.toLowerCase());
+          return event.name.toLowerCase().contains(
+            _currentSearchQuery.toLowerCase(),
+          );
         }).toList();
       }
     });
@@ -101,7 +104,9 @@ class _SearchPageState extends State<SearchPage> {
           // Update filtered events if there's an active search
           if (_currentSearchQuery.isNotEmpty) {
             _filteredEvents = _allEvents.where((event) {
-              return event.name.toLowerCase().contains(_currentSearchQuery.toLowerCase());
+              return event.name.toLowerCase().contains(
+                _currentSearchQuery.toLowerCase(),
+              );
             }).toList();
           }
         });
@@ -140,13 +145,13 @@ class _SearchPageState extends State<SearchPage> {
 
       if (e.toString().contains('Connection refused')) {
         errorMsg =
-        'Cannot connect to server. Please check if your backend is running on port 8080.';
+            'Cannot connect to server. Please check if your backend is running on port 8080.';
       } else if (e.toString().contains('SocketException')) {
         errorMsg =
-        'Network connection failed. Please check your internet connection and server status.';
+            'Network connection failed. Please check your internet connection and server status.';
       } else if (e.toString().contains('localhost')) {
         errorMsg =
-        'Server connection failed. For mobile devices, use 10.0.2.2:8080 instead of localhost:8080.';
+            'Server connection failed. For mobile devices, use 10.0.2.2:8080 instead of localhost:8080.';
       }
 
       setState(() {
@@ -185,7 +190,7 @@ class _SearchPageState extends State<SearchPage> {
     return _allEvents.where((event) {
       final isNew =
           event.creationDate != null &&
-              now.difference(event.creationDate!).inDays <= 30;
+          now.difference(event.creationDate!).inDays <= 30;
       final isNotFull = event.reservationPercentage < 50;
       return isNew || isNotFull;
     }).toList();
@@ -240,9 +245,9 @@ class _SearchPageState extends State<SearchPage> {
         prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
         suffixIcon: _currentSearchQuery.isNotEmpty
             ? IconButton(
-          icon: Icon(Icons.clear, color: Colors.grey[600]),
-          onPressed: _clearSearch,
-        )
+                icon: Icon(Icons.clear, color: Colors.grey[600]),
+                onPressed: _clearSearch,
+              )
             : null,
         filled: true,
         fillColor: Colors.grey[900],
@@ -332,7 +337,10 @@ class _SearchPageState extends State<SearchPage> {
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final event = _filteredEvents[index];
-              return _buildEventListItem(event: event, highlightQuery: _currentSearchQuery);
+              return _buildEventListItem(
+                event: event,
+                highlightQuery: _currentSearchQuery,
+              );
             },
           ),
         ),
@@ -367,7 +375,11 @@ class _SearchPageState extends State<SearchPage> {
           child: Chip(
             label: Text(term, style: const TextStyle(color: Colors.white70)),
             backgroundColor: Colors.grey[850],
-            deleteIcon: const Icon(Icons.close, size: 16, color: Colors.white70),
+            deleteIcon: const Icon(
+              Icons.close,
+              size: 16,
+              color: Colors.white70,
+            ),
             onDeleted: () {
               setState(() {
                 _recentSearches.remove(term);
@@ -441,9 +453,7 @@ class _SearchPageState extends State<SearchPage> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => BookingPage(event: event),
-          ),
+          MaterialPageRoute(builder: (context) => BookingPage(event: event)),
         );
       },
       borderRadius: BorderRadius.circular(12.0),
@@ -457,8 +467,8 @@ class _SearchPageState extends State<SearchPage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
-              child: Image.network(
-                event.imageUrl ?? 'https://picsum.photos/300/200?random=1',
+              child: AuthenticatedImage(
+                imageUrl: event.imageUrl,
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -519,11 +529,7 @@ class _SearchPageState extends State<SearchPage> {
     return RichText(
       text: TextSpan(
         children: [
-          if (index > 0)
-            TextSpan(
-              text: text.substring(0, index),
-              style: style,
-            ),
+          if (index > 0) TextSpan(text: text.substring(0, index), style: style),
           TextSpan(
             text: text.substring(index, index + query.length),
             style: style.copyWith(
@@ -532,10 +538,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
           if (index + query.length < text.length)
-            TextSpan(
-              text: text.substring(index + query.length),
-              style: style,
-            ),
+            TextSpan(text: text.substring(index + query.length), style: style),
         ],
       ),
     );

@@ -6,18 +6,29 @@ This document contains all the API endpoints available across the entire Event P
 ## Architecture
 - **API Gateway** (Port: 8080) - Entry point for all API requests
 - **Eureka Server** (Port: 8761) - Service discovery
-- **Event Service** (Port: 8082) - Manages events and categories
+- **Event Service** (Port: 8084) - Manages events and categories
 - **Booking Service** (Port: 8081) - Handles event bookings
-- **Payment Service** (Port: 8084) - Processes payments
+- **Payment Service** (Port: 8082) - Processes payments
 - **Notification Service** (Port: 8083) - Sends notifications (Kafka-based)
+- **User Service** (Port: 8085) - Registration, login (JWT), and user profile
 
 ## Base URLs
 - **API Gateway**: `http://localhost:8080`
 - **Direct Service Access**:
-  - Event Service: `http://localhost:8082`
+  - Event Service: `http://localhost:8084`
   - Booking Service: `http://localhost:8081`
-  - Payment Service: `http://localhost:8084`
+  - Payment Service: `http://localhost:8082`
   - Notification Service: `http://localhost:8083`
+  - User Service: `http://localhost:8085`
+
+---
+
+## Authentication via API Gateway
+
+- All endpoints under `/api/**` require a JWT in `Authorization: Bearer <TOKEN>` when accessed through the API Gateway, except:
+  - `POST /api/users/register`
+  - `POST /api/users/login`
+  These two are publicly accessible to obtain a token.
 
 ---
 
@@ -40,7 +51,7 @@ Returns a list of all available event category display names.
 ```
 
 ### 1.2 Create Event
-**POST** `/api/events/create`
+**POST** `/api/events`
 
 Creates a new event with category and seat information.
 
@@ -183,7 +194,7 @@ Deletes an event by ID.
 ## 2. Booking Service API (`/api/bookings`)
 
 ### 2.1 Create Booking
-**POST** `/api/bookings/create`
+**POST** `/api/bookings`
 
 Creates a new booking for an event.
 
@@ -254,7 +265,29 @@ Retrieves all bookings for a specific user.
 ]
 ```
 
-### 2.4 Get Bookings by Event
+### 2.4 Get Bookings by User ID
+**GET** `/api/bookings/user-id/{userId}`
+
+Retrieves all bookings for a specific user by user ID.
+
+**Response:**
+```json
+[
+    {
+        "bookingId": 1,
+        "eventId": 1,
+        "eventName": "Rock Concert 2024",
+        "categoryName": "VIP",
+        "seatsBooked": 2,
+        "totalPrice": 300.0,
+        "userEmail": "user@example.com",
+        "bookingTime": "2024-01-15T10:30:00",
+        "status": "CONFIRMED"
+    }
+]
+```
+
+### 2.5 Get Bookings by Event
 **GET** `/api/bookings/event/{eventId}`
 
 Retrieves all bookings for a specific event.
@@ -276,7 +309,7 @@ Retrieves all bookings for a specific event.
 ]
 ```
 
-### 2.5 Delete Booking
+### 2.6 Delete Booking
 **DELETE** `/api/bookings/{id}`
 
 Deletes a booking by ID.
@@ -380,7 +413,63 @@ Retrieves all payments for a specific user.
 
 ---
 
-## 4. Notification Service
+## 4. User Service API (`/api/users`)
+
+### 4.1 Register
+**POST** `/api/users/register`
+
+Registers a new user.
+
+**Request Body:**
+```json
+{
+  "username": "john",
+  "email": "john@example.com",
+  "password": "Pass@123"
+}
+```
+
+**Response:**
+```json
+"User registered successfully!"
+```
+
+### 4.2 Login
+**POST** `/api/users/login`
+
+Authenticates the user and returns a JWT token string.
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com",
+  "password": "Pass@123"
+}
+```
+
+**Response:**
+```json
+"<JWT_TOKEN>"
+```
+
+### 4.3 Get Profile
+**GET** `/api/users/profile`
+
+Requires `Authorization: Bearer <TOKEN>` header. Returns the authenticated user's profile.
+
+**Response:**
+```json
+{
+  "id": 1,
+  "email": "john@example.com",
+  "username": "john",
+  "role": "ROLE_USER"
+}
+```
+
+---
+
+## 5. Notification Service
 
 The Notification Service operates through Kafka events and doesn't expose REST endpoints directly. It automatically sends notifications when:
 
@@ -393,7 +482,7 @@ The Notification Service operates through Kafka events and doesn't expose REST e
 
 ---
 
-## 5. Error Responses
+## 6. Error Responses
 
 ### Common Error Format
 ```json
@@ -415,7 +504,7 @@ The Notification Service operates through Kafka events and doesn't expose REST e
 
 ---
 
-## 6. Data Models
+## 7. Data Models
 
 ### Event Categories
 - `CONCERT` - Musical performances
@@ -449,19 +538,42 @@ The Notification Service operates through Kafka events and doesn't expose REST e
 
 ---
 
-## 7. Usage Examples
+## 8. Usage Examples
 
 ### Complete Booking Flow
 
-1. **Get Event Categories**
+1. (Optional) **Register**
 ```bash
-curl http://localhost:8080/api/events/categories
+curl -X POST http://localhost:8080/api/users/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john",
+    "email": "john@example.com",
+    "password": "Pass@123"
+  }'
 ```
 
-2. **Create Event**
+2. **Login** (get JWT token)
 ```bash
-curl -X POST http://localhost:8080/api/events/create \
+TOKEN=$(curl -s -X POST http://localhost:8080/api/users/login \
   -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "password": "Pass@123"
+  }' | tr -d '"')
+```
+
+3. **Get Event Categories**
+```bash
+curl http://localhost:8080/api/events/categories \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+4. **Create Event**
+```bash
+curl -X POST http://localhost:8080/api/events \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "name": "Jazz Night",
     "description": "Smooth jazz evening",
@@ -478,10 +590,11 @@ curl -X POST http://localhost:8080/api/events/create \
   }'
 ```
 
-3. **Create Booking**
+5. **Create Booking**
 ```bash
-curl -X POST http://localhost:8080/api/bookings/create \
+curl -X POST http://localhost:8080/api/bookings \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "eventId": 1,
     "userEmail": "user@example.com",
@@ -490,10 +603,11 @@ curl -X POST http://localhost:8080/api/bookings/create \
   }'
 ```
 
-4. **Process Payment**
+6. **Process Payment**
 ```bash
 curl -X POST http://localhost:8080/api/payments/process \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "bookingId": 1,
     "userEmail": "user@example.com",
@@ -507,7 +621,7 @@ curl -X POST http://localhost:8080/api/payments/process \
 
 ---
 
-## 8. Service Dependencies
+## 9. Service Dependencies
 
 ### Internal Service Communication
 - **Booking Service** → **Event Service** (via Feign Client)
@@ -525,7 +639,7 @@ curl -X POST http://localhost:8080/api/payments/process \
 
 ---
 
-## 9. Deployment
+## 10. Deployment
 
 ### Prerequisites
 1. Java 17+
@@ -546,8 +660,9 @@ curl -X POST http://localhost:8080/api/payments/process \
 ### Health Checks
 - Eureka Server: `http://localhost:8761`
 - API Gateway: `http://localhost:8080/actuator/health`
-- Event Service: `http://localhost:8082/actuator/health`
+- Event Service: `http://localhost:8084/actuator/health`
 - Booking Service: `http://localhost:8081/actuator/health`
-- Payment Service: `http://localhost:8084/actuator/health`
+- Payment Service: `http://localhost:8082/actuator/health`
 - Notification Service: `http://localhost:8083/actuator/health`
+- User Service: `http://localhost:8085/actuator/health`
 

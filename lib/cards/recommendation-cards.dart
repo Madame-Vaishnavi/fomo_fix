@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/event.dart';
+import '../config.dart';
+import '../widgets/authenticated_image.dart';
 
 // A reusable widget for the smaller recommendation cards.
 class RecommendationCard extends StatefulWidget {
@@ -23,7 +25,7 @@ class _RecommendationCardState extends State<RecommendationCard> {
   Widget build(BuildContext context) {
     final cardWidth = (MediaQuery.of(context).size.width / 2) - 24;
     final event = widget.event;
-    
+
     return InkWell(
       onTap: widget.onTap,
       borderRadius: BorderRadius.circular(16.0),
@@ -40,9 +42,11 @@ class _RecommendationCardState extends State<RecommendationCard> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
-                  child: Image.network(
-                    event.imageUrl ?? 'https://picsum.photos/300/200?random=1',
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16.0),
+                  ),
+                  child: AuthenticatedImage(
+                    imageUrl: event.imageUrl,
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -54,47 +58,55 @@ class _RecommendationCardState extends State<RecommendationCard> {
                   ),
                 ),
                 // Category badge
-                if(widget.categoryTitle == "Recommendations")
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.deepPurpleAccent.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      event.categoryDisplayName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                if (widget.categoryTitle == "Recommendations")
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurpleAccent.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        event.categoryDisplayName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
                 // Ticket availability indicator
-                if(event.reservationPercentage>=50)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: _getAvailabilityColor(event.reservationPercentage).withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${event.availableTickets} left',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
+                if (event.reservationPercentage >= 50)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getAvailabilityColor(
+                          event.reservationPercentage,
+                        ).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${event.availableTickets} left',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
             Padding(
@@ -115,16 +127,15 @@ class _RecommendationCardState extends State<RecommendationCard> {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(
-                        Icons.location_on,
-                        color: Colors.white70,
-                        size: 14,
-                      ),
+                      Icon(Icons.location_on, color: Colors.white70, size: 14),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           event.location,
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -143,7 +154,10 @@ class _RecommendationCardState extends State<RecommendationCard> {
                       Expanded(
                         child: Text(
                           event.formattedDate,
-                          style: TextStyle(color: Colors.yellow[700], fontSize: 12),
+                          style: TextStyle(
+                            color: Colors.yellow[700],
+                            fontSize: 12,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -169,7 +183,8 @@ class _RecommendationCardState extends State<RecommendationCard> {
                             ),
                             children: <TextSpan>[
                               TextSpan(
-                                text: "${event.lowestPriceCategory?.pricePerSeat.toString()} onwards",
+                                text:
+                                    "${event.lowestPriceCategory?.pricePerSeat.toString()} onwards",
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,

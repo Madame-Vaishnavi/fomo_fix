@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fomo_fix/services/api-service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'account_details_page.dart';
+import '../services/auth_service.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
@@ -12,11 +15,66 @@ class UserProfile extends StatefulWidget {
 class _UserProfileState extends State<UserProfile> {
   bool _isNotificationOn = true;
 
+  // New: state for profile loading
+  bool _isLoadingProfile = true;
+  String? _profileError;
+  String? _username;
+  String? _email;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      setState(() {
+        _isLoadingProfile = true;
+        _profileError = null;
+      });
+
+      // Read token from secure storage via AuthService or directly if available
+      final token =
+          AuthService.token ??
+          await const FlutterSecureStorage().read(key: 'token');
+
+      if (token == null) {
+        setState(() {
+          _profileError = 'Not authenticated';
+          _isLoadingProfile = false;
+        });
+        return;
+      }
+
+      final response = await ApiService.getUserProfile(token);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        setState(() {
+          _username = data['username']?.toString();
+          _email = data['email']?.toString();
+          _isLoadingProfile = false;
+        });
+      } else {
+        setState(() {
+          _profileError = 'Failed to load profile (${response.statusCode})';
+          _isLoadingProfile = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _profileError = 'Error: $e';
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SingleChildScrollView( // Added to prevent overflow
+      body: SingleChildScrollView(
+        // Added to prevent overflow
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -47,34 +105,58 @@ class _UserProfileState extends State<UserProfile> {
 
             // --- User Details ---
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 10.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 45), // Space for the overlapping avatar
-                  const Text(
-                    'Singuliet',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(
+                    height: 45,
+                  ), // Space for the overlapping avatar
+                  if (_isLoadingProfile)
+                    const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.deepPurpleAccent,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  else if (_profileError != null)
+                    Text(
+                      _profileError!,
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 14,
+                      ),
+                    )
+                  else ...[
+                    Text(
+                      (_username ?? 'User'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'chingufugga@fuggas.com',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 16,
+                    const SizedBox(height: 4),
+                    Text(
+                      (_email ?? ''),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 16),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
 
             // --- NEW: Settings Section ---
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 24.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -82,11 +164,27 @@ class _UserProfileState extends State<UserProfile> {
                   _buildSettingsSection(
                     title: 'General',
                     items: [
-                      _buildSettingsItem(Icons.person_2_outlined, 'Account Details', '/accountDetails'),
-                      _buildSettingsItem(Icons.event_available, 'List Your Event','/listEvent'),
-                      _buildSettingsItem(Icons.payment_outlined, 'Payment Modes',''),
-                      _buildSettingsItem(Icons.history, 'Booking history',''),
-                      _buildSettingsItem(Icons.support_agent_outlined, 'Support',''),
+                      _buildSettingsItem(
+                        Icons.person_2_outlined,
+                        'Account Details',
+                        '/accountDetails',
+                      ),
+                      _buildSettingsItem(
+                        Icons.event_available,
+                        'List Your Event',
+                        '/listEvent',
+                      ),
+                      _buildSettingsItem(
+                        Icons.payment_outlined,
+                        'Payment Modes',
+                        '',
+                      ),
+                      _buildSettingsItem(Icons.history, 'Booking history', ''),
+                      _buildSettingsItem(
+                        Icons.support_agent_outlined,
+                        'Support',
+                        '',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -94,8 +192,11 @@ class _UserProfileState extends State<UserProfile> {
                   _buildSettingsSection(
                     title: 'Accounts & subscription',
                     items: [
-                      _buildToggleItem(Icons.notifications_outlined, 'Notification'),
-                      _buildSettingsItem(Icons.logout, 'Logout',''),
+                      _buildToggleItem(
+                        Icons.notifications_outlined,
+                        'Notification',
+                      ),
+                      _buildSettingsItem(Icons.logout, 'Logout', '/landing'),
                     ],
                   ),
                 ],
@@ -115,10 +216,7 @@ class _UserProfileState extends State<UserProfile> {
         Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white,
-              width: 3,
-            ),
+            border: Border.all(color: Colors.white, width: 3),
           ),
           child: const CircleAvatar(
             radius: 45,
@@ -130,7 +228,10 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   // Helper to build a settings group container
-  Widget _buildSettingsSection({required String title, required List<Widget> items}) {
+  Widget _buildSettingsSection({
+    required String title,
+    required List<Widget> items,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -159,9 +260,17 @@ class _UserProfileState extends State<UserProfile> {
     return ListTile(
       leading: Icon(icon, color: Colors.white70),
       title: Text(title, style: const TextStyle(color: Colors.white)),
-      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white54,
+        size: 16,
+      ),
       onTap: () {
-        Navigator.pushNamed(context, route);
+        if (title == 'Logout') {
+          AuthService.logout();
+          Navigator.pushReplacementNamed(context, route);
+        } else
+          Navigator.pushNamed(context, route);
       },
     );
   }

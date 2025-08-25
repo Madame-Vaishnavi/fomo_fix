@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:fomo_fix/api-service.dart';
+import 'package:fomo_fix/services/api-service.dart';
 import 'package:fomo_fix/cards/event-category-row.dart';
 import 'package:fomo_fix/Screens/category_page.dart';
 import 'package:fomo_fix/config.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../models/event.dart';
 
@@ -22,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
   bool _isRefreshing = false; // NEW: Track refresh state separately
   String? _errorMessage;
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -53,7 +55,9 @@ class _HomePageState extends State<HomePage> {
       print('Is Refresh: $isRefresh');
       print('===========================');
 
-      final response = await ApiService.get('/events');
+      final token = await _secureStorage.read(key: 'token');
+      print(token);
+      final response = await ApiService.getWithAuth('/events',token!);
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);

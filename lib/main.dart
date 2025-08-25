@@ -5,6 +5,7 @@ import 'package:fomo_fix/bottom_nav.dart';
 import 'package:fomo_fix/Screens/home_page.dart';
 import 'package:fomo_fix/Screens/landing_page.dart';
 import 'package:fomo_fix/Screens/login_page.dart';
+import 'package:fomo_fix/Screens/signup_page.dart';
 import 'package:fomo_fix/splash_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -31,10 +32,10 @@ class _MainState extends State<Main> {
       routes: {
         '/': (context) => SplashScreen(),
         '/landing': (context) => LoginPage(),
-        '/bottomNav': (context)=> BottomNavBar(),
-        '/eventListing' :(context)=> EventListing(),
-        '/accountDetails' :(context)=> AccountDetailsPage(),
-        '/listEvent' : (context)=> EventListing(),
+        '/signup': (context) => SignupPage(),
+        '/bottomNav': (context) => BottomNavBar(),
+        '/accountDetails': (context) => AccountDetailsPage(),
+        '/listEvent': (context) => EventListing(),
       },
     );
   }
