@@ -170,14 +170,13 @@ class ApiService {
 
   /// Updates user username (requires authentication)
   static Future<http.Response> updateUsername(
-      String token,
-      String newUsername,
-      ) async {
+    String token,
+    String newUsername,
+  ) async {
     return patchWithAuth(token, '/users/username', {
       'newUsername': newUsername,
     });
   }
-
 
   /// Gets user booking history with payments (requires authentication)
   static Future<http.Response> getBookingHistory(String token) async {
@@ -185,10 +184,82 @@ class ApiService {
   }
 
   /// Gets user booking history with payments by userId (no auth)
-  static Future<http.Response> getBookingHistoryByUserId(String userId,String token) async {
+  static Future<http.Response> getBookingHistoryByUserId(
+    String userId,
+    String token,
+  ) async {
     final endpoint =
         '/users/booking-history/by-userId?userId=' +
         Uri.encodeComponent(userId);
-    return getWithAuth(endpoint,token);
+    return getWithAuth(endpoint, token);
+  }
+
+  /// Searches for events using the backend search endpoint
+  static Future<http.Response> searchEvents(String query) async {
+    final endpoint = '/events/search?query=' + Uri.encodeComponent(query);
+    return get(endpoint);
+  }
+
+  /// Searches for events using the backend search endpoint (authenticated)
+  static Future<http.Response> searchEventsWithAuth(
+    String token,
+    String query,
+  ) async {
+    final endpoint = '/events/search?query=' + Uri.encodeComponent(query);
+    return getWithAuth(endpoint, token);
+  }
+
+  /// Searches for events by category using the backend search endpoint
+  static Future<http.Response> searchEventsByCategory(
+    String query,
+    String category,
+  ) async {
+    final endpoint =
+        '/events/search/category?query=' +
+        Uri.encodeComponent(query) +
+        '&category=' +
+        Uri.encodeComponent(category);
+    return get(endpoint);
+  }
+
+  /// Searches for events by category using the backend search endpoint (authenticated)
+  static Future<http.Response> searchEventsByCategoryWithAuth(
+    String token,
+    String query,
+    String category,
+  ) async {
+    final endpoint =
+        '/events/search/category?query=' +
+        Uri.encodeComponent(query) +
+        '&category=' +
+        Uri.encodeComponent(category);
+    return getWithAuth(endpoint, token);
+  }
+
+  /// Gets upcoming events
+  static Future<http.Response> getUpcomingEvents() async {
+    return get('/events/upcoming');
+  }
+
+  /// Gets upcoming events (authenticated)
+  static Future<http.Response> getUpcomingEventsWithAuth(String token) async {
+    return getWithAuth('/events/upcoming', token);
+  }
+
+  /// Searches for upcoming events
+  static Future<http.Response> searchUpcomingEvents(String query) async {
+    final endpoint =
+        '/events/search/upcoming?query=' + Uri.encodeComponent(query);
+    return get(endpoint);
+  }
+
+  /// Searches for upcoming events (authenticated)
+  static Future<http.Response> searchUpcomingEventsWithAuth(
+    String token,
+    String query,
+  ) async {
+    final endpoint =
+        '/events/search/upcoming?query=' + Uri.encodeComponent(query);
+    return getWithAuth(endpoint, token);
   }
 }

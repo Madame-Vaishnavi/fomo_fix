@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../booking/booking-page.dart';
 import '../services/api-service.dart';
 import '../config/config.dart';
@@ -17,28 +19,107 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   List<Event> _allEvents = [];
-  List<Event> _filteredEvents = [];
+  List<Event> _searchResults = [];
   bool _isLoading = true;
   bool _isRefreshing = false;
+  bool _isSearching = false;
   String? _errorMessage;
 
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   final TextEditingController _searchController = TextEditingController();
   final List<String> _recentSearches = [];
   String _currentSearchQuery = '';
+  String? _selectedCategory;
+  Timer? _searchDebounceTimer;
+
+  // Available categories for filtering
+  final List<String> _categories = [
+    'All Categories',
+    'CONCERT',
+    'THEATER',
+    'SPORTS',
+    'CONFERENCE',
+    'WORKSHOP',
+    'EXHIBITION',
+    'OTHER',
+  ];
 
   void _handleSearchChanged(String query) {
     setState(() {
       _currentSearchQuery = query.trim();
-      if (_currentSearchQuery.isEmpty) {
-        _filteredEvents = [];
-      } else {
-        _filteredEvents = _allEvents.where((event) {
-          return event.name.toLowerCase().contains(
-            _currentSearchQuery.toLowerCase(),
-          );
-        }).toList();
-      }
     });
+
+    // Cancel previous timer
+    _searchDebounceTimer?.cancel();
+
+    if (_currentSearchQuery.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    // Debounce search requests
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _performSearch(_currentSearchQuery);
+    });
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) return;
+
+    setState(() {
+      _isSearching = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final token = await _secureStorage.read(key: 'token');
+      if (token == null || token.isEmpty) {
+        setState(() {
+          _isSearching = false;
+          _errorMessage = 'Not authenticated. Please log in again.';
+        });
+        return;
+      }
+
+      http.Response response;
+
+      // Use category-specific search if a category is selected
+      if (_selectedCategory != null && _selectedCategory != 'All Categories') {
+        response = await ApiService.searchEventsByCategoryWithAuth(
+          token,
+          query,
+          _selectedCategory!,
+        );
+      } else {
+        response = await ApiService.searchEventsWithAuth(token, query);
+      }
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _searchResults = data.map((json) => Event.fromJson(json)).toList();
+          _isSearching = false;
+        });
+      } else if (response.statusCode == 401) {
+        setState(() {
+          _isSearching = false;
+          _errorMessage = 'Session expired. Please log in again.';
+        });
+      } else {
+        setState(() {
+          _isSearching = false;
+          _errorMessage = 'Search failed: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isSearching = false;
+        _errorMessage = 'Search error: $e';
+      });
+    }
   }
 
   void _handleSearchSubmitted(String query) {
@@ -68,7 +149,12 @@ class _SearchPageState extends State<SearchPage> {
 
   void _clearSearch() {
     _searchController.clear();
-    _handleSearchChanged('');
+    setState(() {
+      _currentSearchQuery = '';
+      _selectedCategory = null;
+      _searchResults = [];
+      _isSearching = false;
+    });
   }
 
   Future<void> _fetchEvents({bool isRefresh = false}) async {
@@ -92,7 +178,8 @@ class _SearchPageState extends State<SearchPage> {
       print('Is Refresh: $isRefresh');
       print('===========================');
 
-      final response = await ApiService.get('/events');
+      final token = await _secureStorage.read(key: 'token');
+      final response = await ApiService.getWithAuth('/events', token!);
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -102,14 +189,6 @@ class _SearchPageState extends State<SearchPage> {
           _allEvents = data.map((json) => Event.fromJson(json)).toList();
           _isLoading = false;
           _isRefreshing = false;
-          // Update filtered events if there's an active search
-          if (_currentSearchQuery.isNotEmpty) {
-            _filteredEvents = _allEvents.where((event) {
-              return event.name.toLowerCase().contains(
-                _currentSearchQuery.toLowerCase(),
-              );
-            }).toList();
-          }
         });
 
         if (isRefresh && mounted) {
@@ -121,6 +200,12 @@ class _SearchPageState extends State<SearchPage> {
             ),
           );
         }
+      } else if (response.statusCode == 401) {
+        setState(() {
+          _isLoading = false;
+          _isRefreshing = false;
+          _errorMessage = 'Session expired. Please log in again.';
+        });
       } else {
         setState(() {
           _isLoading = false;
@@ -183,6 +268,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchDebounceTimer?.cancel();
     super.dispose();
   }
 
@@ -235,27 +321,93 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildSearchField() {
-    return TextField(
-      controller: _searchController,
-      style: const TextStyle(color: Colors.white),
-      onChanged: _handleSearchChanged,
-      onSubmitted: _handleSearchSubmitted,
-      decoration: InputDecoration(
-        hintText: "Search for Events, Plays, Activities..",
-        hintStyle: TextStyle(color: Colors.grey[600]),
-        prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-        suffixIcon: _currentSearchQuery.isNotEmpty
-            ? IconButton(
-                icon: Icon(Icons.clear, color: Colors.grey[600]),
-                onPressed: _clearSearch,
-              )
-            : null,
-        filled: true,
-        fillColor: Colors.grey[900],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide.none,
+    return Column(
+      children: [
+        TextField(
+          controller: _searchController,
+          style: const TextStyle(color: Colors.white),
+          onChanged: _handleSearchChanged,
+          onSubmitted: _handleSearchSubmitted,
+          decoration: InputDecoration(
+            hintText: "Search for Events, Plays, Activities..",
+            hintStyle: TextStyle(color: Colors.grey[600]),
+            prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+            suffixIcon: _currentSearchQuery.isNotEmpty
+                ? _isSearching
+                      ? Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        )
+                      : IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey[600]),
+                          onPressed: _clearSearch,
+                        )
+                : null,
+            filled: true,
+            fillColor: Colors.grey[900],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.0),
+              borderSide: BorderSide.none,
+            ),
+          ),
         ),
+        if (_currentSearchQuery.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _buildCategoryFilter(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCategoryFilter() {
+    return Container(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _categories.length,
+        itemBuilder: (context, index) {
+          final category = _categories[index];
+          final isSelected =
+              _selectedCategory == category ||
+              (_selectedCategory == null && category == 'All Categories');
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: FilterChip(
+              label: Text(
+                category,
+                style: TextStyle(
+                  color: isSelected ? Colors.black : Colors.white70,
+                  fontSize: 12,
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedCategory = selected ? category : null;
+                });
+                // Trigger search with new category filter
+                if (_currentSearchQuery.isNotEmpty) {
+                  _performSearch(_currentSearchQuery);
+                }
+              },
+              backgroundColor: Colors.grey[800],
+              selectedColor: Colors.white,
+              checkmarkColor: Colors.black,
+              side: BorderSide.none,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -275,9 +427,16 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildSearchResults() {
-    if (_isLoading) {
+    if (_isSearching) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Colors.white),
+            SizedBox(height: 16),
+            Text('Searching...', style: TextStyle(color: Colors.white70)),
+          ],
+        ),
       );
     }
 
@@ -295,7 +454,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => _fetchEvents(isRefresh: true),
+              onPressed: () => _performSearch(_currentSearchQuery),
               child: const Text('Retry'),
             ),
           ],
@@ -303,7 +462,7 @@ class _SearchPageState extends State<SearchPage> {
       );
     }
 
-    if (_filteredEvents.isEmpty) {
+    if (_searchResults.isEmpty && _currentSearchQuery.isNotEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -328,16 +487,16 @@ class _SearchPageState extends State<SearchPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${_filteredEvents.length} events found',
+          '${_searchResults.length} events found',
           style: TextStyle(color: Colors.grey[400], fontSize: 14),
         ),
         const SizedBox(height: 16),
         Expanded(
           child: ListView.separated(
-            itemCount: _filteredEvents.length,
+            itemCount: _searchResults.length,
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              final event = _filteredEvents[index];
+              final event = _searchResults[index];
               return _buildEventListItem(
                 event: event,
                 highlightQuery: _currentSearchQuery,
